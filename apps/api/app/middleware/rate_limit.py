@@ -9,8 +9,9 @@ from starlette.middleware.base import RequestResponseEndpoint
 from starlette.responses import Response
 
 PUBLIC_POST_LIMITS = {
-    "/api/v1/guestbook": 10,
-    "/api/v1/photos": 6,
+    # API runs two workers; per-worker limits keep aggregate near 10/6 per minute.
+    "/api/v1/guestbook": 5,
+    "/api/v1/photos": 3,
 }
 
 
