@@ -10,6 +10,14 @@ export interface GuestEntryCreated {
   status: "pending";
 }
 
+export interface ApprovedGuestEntry {
+  id: string;
+  display_name: string;
+  origin: string;
+  message: string;
+  created_at: string;
+}
+
 export interface PhotoCreated {
   id: string;
   status: "pending";
@@ -132,6 +140,15 @@ export async function submitGuestEntry(input: GuestEntryInput): Promise<GuestEnt
   }
 
   return (await response.json()) as GuestEntryCreated;
+}
+
+export async function listApprovedGuestEntries(limit = 20): Promise<ApprovedGuestEntry[]> {
+  const response = await fetch(`/api/v1/guestbook/approved?limit=${limit}`, {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(await readApiError(response));
+  const payload: unknown = await response.json();
+  return Array.isArray(payload) ? (payload as ApprovedGuestEntry[]) : [];
 }
 
 export async function uploadPhoto(photo: Blob, publicConsent: boolean): Promise<PhotoCreated> {

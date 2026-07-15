@@ -35,12 +35,13 @@ describe("App", () => {
   });
 
   it("mengirim harapan dan menampilkan konfirmasi moderasi", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ id: "entry-id", status: "pending" }), {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      if (String(input).includes("/guestbook/approved")) return Response.json([]);
+      return new Response(JSON.stringify({ id: "entry-id", status: "pending" }), {
         status: 201,
         headers: { "Content-Type": "application/json" },
-      }),
-    );
+      });
+    });
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));

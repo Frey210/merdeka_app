@@ -1,5 +1,6 @@
 import { BrandHeader } from "../components/BrandHeader";
 import { ConnectionStatus } from "../components/ConnectionStatus";
+import { HopeCarousel } from "../components/HopeCarousel";
 
 interface IdleScreenProps {
   onStart: () => void;
@@ -33,11 +34,7 @@ export function IdleScreen({ onStart }: IdleScreenProps) {
               </span>
             </div>
 
-            <div className="relative hidden min-h-[34rem] lg:block" aria-hidden="true">
-              <div className="absolute inset-12 rotate-6 rounded-[4rem] bg-white/10" />
-              <div className="absolute inset-x-4 bottom-8 top-24 -rotate-3 rounded-[4rem] border-4 border-white/35" />
-              <div className="absolute inset-0 grid place-items-center text-[20rem] font-bold leading-none text-white/95">81</div>
-            </div>
+            <HopeCarousel />
           </section>
         </div>
       </button>
@@ -45,4 +42,3 @@ export function IdleScreen({ onStart }: IdleScreenProps) {
     </main>
   );
 }
-

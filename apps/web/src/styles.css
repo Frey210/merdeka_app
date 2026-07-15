@@ -52,6 +52,21 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+@keyframes hope-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hope-card-enter {
+  animation: hope-card-enter 500ms ease-out;
+}
+
 .touch-button-primary {
   min-height: 4.5rem;
   border-radius: 9999px;
