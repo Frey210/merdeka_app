@@ -44,5 +44,8 @@ Origin aplikasi tersedia pada `${APP_BIND_IP}:${APP_HTTP_PORT}`. Cloudflare Tunn
 - Gunakan database dan user PostgreSQL khusus aplikasi.
 - Lindungi hostname admin dengan Cloudflare Access dan validasi JWT di origin.
 - Foto disimpan pada volume privat dan hanya diunduh melalui token yang tervalidasi.
+- Foto kedaluwarsa dibersihkan otomatis setiap jam; masa simpan default tujuh hari.
+- Endpoint buku tamu dan upload foto memakai sliding-window rate limit per alamat klien.
+- Dashboard admin memoderasi buku tamu dan foto; foto tanpa persetujuan publik tidak dapat disetujui.
+- Nginx mengirim CSP, HSTS, anti-frame, dan pembatasan izin kamera/mikrofon.
 - Tutup Docker API TCP port 2375 sebelum deployment produksi.
-

@@ -48,8 +48,14 @@ class Photo(Base):
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_by: Mapped[str | None] = mapped_column(String(255))
     guest_entry: Mapped[GuestEntry | None] = relationship(back_populates="photos")
-    download_tokens: Mapped[list["DownloadToken"]] = relationship(back_populates="photo")
+    download_tokens: Mapped[list["DownloadToken"]] = relationship(
+        back_populates="photo",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
 
 class DownloadToken(Base):

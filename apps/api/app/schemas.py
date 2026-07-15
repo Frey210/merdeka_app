@@ -79,3 +79,15 @@ class PhotoCreated(BaseModel):
 class PhotoDownloadCreated(BaseModel):
     download_url: str
     expires_at: datetime
+
+
+class AdminPhoto(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    public_consent: bool
+    status: ModerationStatus
+    created_at: datetime
+    expires_at: datetime
+    reviewed_at: datetime | None
+    reviewed_by: str | None

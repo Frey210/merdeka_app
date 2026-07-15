@@ -41,6 +41,16 @@ export interface AdminGuestEntry {
   reviewed_by: string | null;
 }
 
+export interface AdminPhoto {
+  id: string;
+  public_consent: boolean;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  expires_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+}
+
 async function readApiError(response: Response): Promise<string> {
   try {
     const payload = (await response.json()) as ApiErrorPayload;
@@ -80,6 +90,30 @@ export async function moderateGuestEntry(
 
 export async function deleteGuestEntry(id: string): Promise<void> {
   const response = await fetch(`/api/v1/admin/guestbook/${id}`, { method: "DELETE" });
+  if (!response.ok) throw new Error(await readApiError(response));
+}
+
+export async function listAdminPhotos(status: AdminPhoto["status"]): Promise<AdminPhoto[]> {
+  const response = await fetch(`/api/v1/admin/photos?status=${status}`);
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as AdminPhoto[];
+}
+
+export async function moderatePhoto(
+  id: string,
+  status: "approved" | "rejected",
+): Promise<AdminPhoto> {
+  const response = await fetch(`/api/v1/admin/photos/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as AdminPhoto;
+}
+
+export async function deletePhoto(id: string): Promise<void> {
+  const response = await fetch(`/api/v1/admin/photos/${id}`, { method: "DELETE" });
   if (!response.ok) throw new Error(await readApiError(response));
 }
 

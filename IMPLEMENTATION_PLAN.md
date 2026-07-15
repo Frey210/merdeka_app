@@ -59,7 +59,7 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 
 ### Fase 5 - Hardening dan UAT
 
-- [ ] Tambahkan limit per kiosk/session pada endpoint submit/upload serta log error tanpa PII.
+- [x] Tambahkan limit per kiosk/session pada endpoint submit/upload serta log operasional tanpa PII.
 - [ ] Unit test: validator, timeout, generator gambar, token kedaluwarsa.
 - [ ] E2E test: idle -> guest book -> admin approve -> idle; idle -> foto -> QR; koneksi/kamera gagal.
 - [ ] Uji browser target setidaknya 4 jam, lalu uji pemulihan setelah restart browser, cabut kamera, dan internet putus.
