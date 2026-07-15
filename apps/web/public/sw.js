@@ -1,4 +1,4 @@
-const CACHE_NAME = "merdeka-shell-v1";
+const CACHE_NAME = "merdeka-shell-v2";
 const PRECACHE = [
   "/",
   "/branding/hut-ri-81.png",
@@ -58,4 +58,3 @@ self.addEventListener("fetch", (event) => {
     ),
   );
 });
-
