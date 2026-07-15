@@ -1,9 +1,10 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 
@@ -68,5 +69,34 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: /siap berfoto/i })).toBeInTheDocument();
     expect(screen.getByText(/foto disimpan privat maksimal 7 hari/i)).toBeInTheDocument();
     expect(screen.getByRole("checkbox")).not.toBeChecked();
+  });
+
+  it("memasang stream setelah elemen video selesai dirender", async () => {
+    const stop = vi.fn();
+    const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream;
+    const getUserMedia = vi.fn().mockResolvedValue(stream);
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia },
+    });
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    const { container } = render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
+    fireEvent.click(screen.getByRole("button", { name: /photobooth merdeka/i }));
+    fireEvent.click(screen.getByRole("button", { name: /aktifkan kamera/i }));
+
+    const video = await waitFor(() => {
+      const element = container.querySelector("video");
+      expect(element).not.toBeNull();
+      expect(element?.srcObject).toBe(stream);
+      return element as HTMLVideoElement;
+    });
+    Object.defineProperty(video, "videoWidth", { configurable: true, value: 1280 });
+    Object.defineProperty(video, "videoHeight", { configurable: true, value: 720 });
+    fireEvent.loadedMetadata(video);
+
+    expect(await screen.findByText("Kamera siap")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ambil Foto" })).toBeEnabled();
   });
 });

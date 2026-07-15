@@ -19,26 +19,71 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
   const [qrUrl, setQrUrl] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [activeStream, setActiveStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const snapshotUrlRef = useRef("");
 
   function stopCamera() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    setActiveStream(null);
+    setCameraReady(false);
     if (videoRef.current) videoRef.current.srcObject = null;
   }
 
   useEffect(() => {
     return () => {
-      stopCamera();
-      if (snapshotUrl) URL.revokeObjectURL(snapshotUrl);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      if (snapshotUrlRef.current) URL.revokeObjectURL(snapshotUrlRef.current);
     };
-  }, [snapshotUrl]);
+  }, []);
+
+  useEffect(() => {
+    if (stage !== "camera" || !videoRef.current || !activeStream) return;
+
+    const video = videoRef.current;
+    const stream = activeStream;
+    let ready = false;
+    const markReady = () => {
+      if (!video.videoWidth || !video.videoHeight) return;
+      ready = true;
+      setCameraReady(true);
+      setBusy(false);
+      setError("");
+    };
+    const watchdog = window.setTimeout(() => {
+      if (!ready) {
+        setBusy(false);
+        setError("Stream kamera aktif, tetapi frame video belum diterima. Coba buka ulang kamera.");
+      }
+    }, 8_000);
+
+    video.srcObject = stream;
+    video.addEventListener("loadedmetadata", markReady);
+    video.addEventListener("canplay", markReady);
+    video.addEventListener("playing", markReady);
+    void video.play().then(markReady).catch(() => {
+      setBusy(false);
+      setError("Video kamera gagal diputar oleh browser. Tekan Buka Ulang Kamera.");
+    });
+
+    return () => {
+      window.clearTimeout(watchdog);
+      video.removeEventListener("loadedmetadata", markReady);
+      video.removeEventListener("canplay", markReady);
+      video.removeEventListener("playing", markReady);
+    };
+  }, [activeStream, stage]);
 
   async function startCamera() {
     setError("");
+    setBusy(true);
+    setCameraReady(false);
     if (!navigator.mediaDevices?.getUserMedia) {
+      setBusy(false);
       setError("Browser atau perangkat ini tidak mendukung kamera.");
       return;
     }
@@ -48,17 +93,20 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
         audio: false,
       });
       streamRef.current = stream;
+      setActiveStream(stream);
       setStage("camera");
-      window.setTimeout(() => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      }, 0);
     } catch {
+      setBusy(false);
       setError("Kamera tidak dapat dibuka. Periksa izin browser dan sambungan webcam.");
     }
   }
 
   async function takePhoto() {
     if (!videoRef.current || busy) return;
+    if (!cameraReady || !videoRef.current.videoWidth || !videoRef.current.videoHeight) {
+      setError("Kamera belum siap. Tunggu sampai indikator Kamera siap muncul.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -69,6 +117,8 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
       setCountdown(null);
       const blob = await capturePhoto(videoRef.current, theme);
       const url = URL.createObjectURL(blob);
+      if (snapshotUrlRef.current) URL.revokeObjectURL(snapshotUrlRef.current);
+      snapshotUrlRef.current = url;
       setSnapshot(blob);
       setSnapshotUrl(url);
       stopCamera();
@@ -82,7 +132,8 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
   }
 
   async function retake() {
-    if (snapshotUrl) URL.revokeObjectURL(snapshotUrl);
+    if (snapshotUrlRef.current) URL.revokeObjectURL(snapshotUrlRef.current);
+    snapshotUrlRef.current = "";
     setSnapshot(null);
     setSnapshotUrl("");
     await startCamera();
@@ -145,7 +196,9 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
           {error && <p className="mt-5 rounded-2xl bg-red-50 p-4 text-xl font-bold text-brand-red" role="alert">{error}</p>}
           <div className="mt-8 flex flex-wrap justify-end gap-3">
             <button className="touch-button-secondary" type="button" onClick={onBack}>Kembali</button>
-            <button className="touch-button-primary" type="button" onClick={() => void startCamera()}>Aktifkan Kamera</button>
+            <button className="touch-button-primary" disabled={busy} type="button" onClick={() => void startCamera()}>
+              {busy ? "Membuka Kamera…" : "Aktifkan Kamera"}
+            </button>
           </div>
         </div>
       </section>
@@ -181,12 +234,31 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
         ) : (
           <img className="size-full object-cover" src={snapshotUrl} alt="Pratinjau foto photobooth" />
         )}
+        {stage === "camera" && !cameraReady && countdown === null && (
+          <div className="absolute inset-0 grid place-items-center bg-black/45 text-center text-2xl font-bold text-white">
+            Menghubungkan stream kamera…
+          </div>
+        )}
         {countdown !== null && <div className="absolute inset-0 grid place-items-center bg-black/35 text-[12rem] font-bold text-white">{countdown}</div>}
       </div>
+      {stage === "camera" && (
+        <p className={`mx-auto mt-4 text-xl font-bold ${cameraReady ? "text-green-700" : "text-black/55"}`} aria-live="polite">
+          {cameraReady ? "Kamera siap" : "Menunggu frame kamera"}
+        </p>
+      )}
       {error && <p className="mx-auto mt-4 w-full max-w-5xl rounded-2xl bg-red-50 p-4 text-xl font-bold text-brand-red" role="alert">{error}</p>}
       <div className="mt-5 flex justify-center gap-4">
         {stage === "camera" ? (
-          <button className="touch-button-primary" disabled={busy} type="button" onClick={() => void takePhoto()}>{busy ? "Bersiap…" : "Ambil Foto"}</button>
+          <>
+            {error && (
+              <button className="touch-button-secondary" type="button" onClick={() => { stopCamera(); void startCamera(); }}>
+                Buka Ulang Kamera
+              </button>
+            )}
+            <button className="touch-button-primary" disabled={busy || !cameraReady} type="button" onClick={() => void takePhoto()}>
+              {cameraReady ? "Ambil Foto" : "Menunggu Kamera…"}
+            </button>
+          </>
         ) : (
           <>
             <button className="touch-button-secondary" disabled={busy} type="button" onClick={() => void retake()}>Ambil Ulang</button>
