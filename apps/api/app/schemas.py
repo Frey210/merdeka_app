@@ -69,3 +69,13 @@ class ModerationUpdate(BaseModel):
         if value is ModerationStatus.pending:
             raise ValueError("Status moderasi harus approved atau rejected")
         return value
+
+
+class PhotoCreated(BaseModel):
+    id: uuid.UUID
+    status: ModerationStatus
+
+
+class PhotoDownloadCreated(BaseModel):
+    download_url: str
+    expires_at: datetime

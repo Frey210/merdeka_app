@@ -29,7 +29,7 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 - [x] Inisialisasi monorepo React/TypeScript/Vite dan FastAPI, lint, unit test, serta Docker Compose.
 - [x] Salin aset yang diizinkan ke `public/assets`; gunakan file PNG logo resmi, font Saira lokal, dan foto hasil kurasi.
 - [x] Definisikan design tokens: `brand-red #ED1C24`, putih, hitam, ukuran sentuh >= 56 px, dan skala teks kiosk.
-- [ ] Buat enam layar: Idle, Menu, Timeline, Guest Book, Kamera, Preview/QR; tambah dashboard admin terpisah.
+- [x] Buat enam layar: Idle, Menu, Timeline, Guest Book, Kamera, Preview/QR; tambah dashboard admin terpisah.
 - [ ] Lakukan review desain dengan komunikasi/brand sebelum coding detail.
 
 ### Fase 2 - Alur kiosk offline
@@ -38,7 +38,7 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 - [x] Implementasi timer global 90 detik yang mengecualikan countdown dan mematikan stream kamera saat reset.
 - [x] Buat timeline data-driven dari JSON lokal (maksimum enam kartu, teks sumber tervalidasi).
 - [x] Tambahkan cache aset aplikasi dan halaman offline melalui service worker hanya untuk shell/timeline.
-- [x] Tambahkan indikator koneksi dan fallback menu/timeline ketika internet putus; fallback kamera dilengkapi pada fase photobooth.
+- [x] Tambahkan indikator koneksi dan fallback menu/timeline ketika internet putus serta pesan pemulihan saat kamera atau jaringan gagal.
 
 ### Fase 3 - Guest book dan admin
 
@@ -50,12 +50,12 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 
 ### Fase 4 - Photobooth dan QR
 
-- [ ] Integrasikan `getUserMedia` dengan resolusi default 1280x720, indikator izin, dan penghentian track yang andal.
-- [ ] Sediakan tiga twibbon PNG transparan resmi, thumbnail pemilihannya, serta overlay di atas preview video.
-- [ ] Render frame final ke Canvas, kompres JPEG <= 2 MB, dan uji orientasi/mirroring webcam.
-- [ ] Buat endpoint upload FastAPI yang memberi jalur UUID dan menolak file di luar tipe/ukuran yang diizinkan.
-- [ ] Buat endpoint `create-download` dan `download-photo`: token di-hash, berlaku 24 jam, volume tetap privat.
-- [ ] Tampilkan QR dari URL download; jangan menampilkan URL mentah atau membuka unduhan pada kiosk.
+- [x] Integrasikan `getUserMedia` dengan resolusi default 1280x720, indikator izin, dan penghentian track yang andal.
+- [x] Sediakan tiga bingkai code-native bertema identitas resmi, pemilihannya, serta overlay pada hasil Canvas.
+- [x] Render frame final ke Canvas, kompres JPEG <= 2 MB, dan samakan orientasi/mirroring preview dengan hasil.
+- [x] Buat endpoint upload FastAPI yang memberi jalur UUID dan menolak file di luar tipe/ukuran yang diizinkan.
+- [x] Buat endpoint `create-download` dan `download-photo`: token di-hash HMAC, berlaku 24 jam, volume tetap privat.
+- [x] Tampilkan QR dari URL download; jangan menampilkan URL mentah atau membuka unduhan pada kiosk.
 
 ### Fase 5 - Hardening dan UAT
 

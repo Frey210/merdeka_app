@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 import { BrandHeader } from "./components/BrandHeader";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
-import { ComingSoonScreen } from "./screens/ComingSoonScreen";
 import { GuestBookScreen } from "./screens/GuestBookScreen";
 import { IdleScreen } from "./screens/IdleScreen";
 import { MenuScreen } from "./screens/MenuScreen";
+import { PhotoBoothScreen } from "./screens/PhotoBoothScreen";
 import { TimelineScreen } from "./screens/TimelineScreen";
 
 export type AppScreen =
@@ -40,13 +40,7 @@ export function App() {
         {screen === "menu" && <MenuScreen onNavigate={setScreen} />}
         {screen === "timeline" && <TimelineScreen onBack={() => setScreen("menu")} />}
         {screen === "guestbook" && <GuestBookScreen onBack={() => setScreen("menu")} />}
-        {screen === "camera" && (
-          <ComingSoonScreen
-            eyebrow="Photobooth Merdeka"
-            title="Kamera dan twibbon akan hadir pada tahap berikutnya."
-            onBack={() => setScreen("menu")}
-          />
-        )}
+        {screen === "camera" && <PhotoBoothScreen onBack={() => setScreen("menu")} />}
       </div>
     </main>
   );

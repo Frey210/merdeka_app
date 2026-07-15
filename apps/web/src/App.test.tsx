@@ -58,4 +58,15 @@ describe("App", () => {
     );
     fetchMock.mockRestore();
   });
+
+  it("membuka pemberitahuan privasi photobooth sebelum kamera", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
+    fireEvent.click(screen.getByRole("button", { name: /photobooth merdeka/i }));
+
+    expect(screen.getByRole("heading", { name: /siap berfoto/i })).toBeInTheDocument();
+    expect(screen.getByText(/foto disimpan privat maksimal 7 hari/i)).toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+  });
 });

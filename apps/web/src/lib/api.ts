@@ -10,6 +10,16 @@ export interface GuestEntryCreated {
   status: "pending";
 }
 
+export interface PhotoCreated {
+  id: string;
+  status: "pending";
+}
+
+export interface PhotoDownloadCreated {
+  download_url: string;
+  expires_at: string;
+}
+
 interface ApiErrorPayload {
   detail?: string | { msg?: string }[];
 }
@@ -88,4 +98,19 @@ export async function submitGuestEntry(input: GuestEntryInput): Promise<GuestEnt
   }
 
   return (await response.json()) as GuestEntryCreated;
+}
+
+export async function uploadPhoto(photo: Blob, publicConsent: boolean): Promise<PhotoCreated> {
+  const form = new FormData();
+  form.append("photo", photo, "photobooth-merdeka-upg.jpg");
+  form.append("public_consent", String(publicConsent));
+  const response = await fetch("/api/v1/photos", { method: "POST", body: form });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as PhotoCreated;
+}
+
+export async function createPhotoDownload(photoId: string): Promise<PhotoDownloadCreated> {
+  const response = await fetch(`/api/v1/photos/${photoId}/download`, { method: "POST" });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as PhotoDownloadCreated;
 }
