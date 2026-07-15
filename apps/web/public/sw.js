@@ -1,7 +1,8 @@
-const CACHE_NAME = "merdeka-shell-v5";
+const CACHE_NAME = "merdeka-shell-v6";
 const PRECACHE = [
   "/",
   "/branding/hut-ri-81.png",
+  "/branding/hut-ri-81-horizontal.png",
   "/branding/danantara.svg",
   "/branding/injourney.png",
   "/branding/upg.png",

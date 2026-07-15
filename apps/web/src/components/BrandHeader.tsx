@@ -45,18 +45,30 @@ export function BrandHeader({ onHome, hutLogoVariant = "default" }: BrandHeaderP
           </div>
         </div>
       </div>
-      <img
-        className={`h-24 w-auto shrink-0 object-contain lg:h-32 ${
-          hutLogoVariant === "white" ? "brightness-0 invert" : ""
-        }`}
-        src="/branding/hut-ri-81.png"
-        alt="HUT ke-81 Republik Indonesia"
-      />
+      <div
+        className="relative flex h-32 w-60 shrink-0 items-center justify-center lg:h-44 lg:w-[22rem]"
+        data-testid="hut-logo-area"
+      >
+        {hutLogoVariant === "white" && (
+          <span
+            className="absolute right-0 size-44 rounded-full border-[1.75rem] border-white/10 lg:size-60 lg:border-[2.5rem]"
+            aria-hidden="true"
+          />
+        )}
+        <div className="relative h-full w-full overflow-hidden">
+          <img
+            className="absolute left-1/2 top-1/2 w-[160%] max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
+            style={{ filter: hutLogoVariant === "white" ? "brightness(0) invert(1)" : "none" }}
+            src="/branding/hut-ri-81-horizontal.png"
+            alt="HUT ke-81 Republik Indonesia"
+          />
+        </div>
+      </div>
     </>
   );
 
   return (
-    <header className="flex min-h-32 items-center justify-between gap-8" aria-label="Identitas penyelenggara">
+    <header className="flex min-h-44 items-center justify-between gap-8" aria-label="Identitas penyelenggara">
       {onHome ? (
         <button
           className="contents focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-8 focus-visible:outline-brand-red"

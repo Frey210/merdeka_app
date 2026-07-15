@@ -25,6 +25,21 @@ describe("BrandHeader", () => {
   it("mendukung logo HUT putih untuk latar merah", () => {
     render(<BrandHeader hutLogoVariant="white" />);
 
-    expect(screen.getByAltText("HUT ke-81 Republik Indonesia")).toHaveClass("brightness-0", "invert");
+    expect(screen.getByAltText("HUT ke-81 Republik Indonesia")).toHaveStyle({
+      filter: "brightness(0) invert(1)",
+    });
+    expect(screen.getByTestId("hut-logo-area")).toContainElement(
+      screen.getByAltText("HUT ke-81 Republik Indonesia"),
+    );
+  });
+
+  it("memakai warna asli logo HUT di halaman terang", () => {
+    render(<BrandHeader />);
+
+    expect(screen.getByAltText("HUT ke-81 Republik Indonesia")).toHaveStyle({ filter: "none" });
+    expect(screen.getByAltText("HUT ke-81 Republik Indonesia")).toHaveAttribute(
+      "src",
+      "/branding/hut-ri-81-horizontal.png",
+    );
   });
 });
