@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { BrandHeader } from "./components/BrandHeader";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
 import { ComingSoonScreen } from "./screens/ComingSoonScreen";
+import { GuestBookScreen } from "./screens/GuestBookScreen";
 import { IdleScreen } from "./screens/IdleScreen";
 import { MenuScreen } from "./screens/MenuScreen";
 import { TimelineScreen } from "./screens/TimelineScreen";
@@ -38,13 +39,7 @@ export function App() {
 
         {screen === "menu" && <MenuScreen onNavigate={setScreen} />}
         {screen === "timeline" && <TimelineScreen onBack={() => setScreen("menu")} />}
-        {screen === "guestbook" && (
-          <ComingSoonScreen
-            eyebrow="Tulis Harapan"
-            title="Ruang untuk harapanmu sedang kami siapkan."
-            onBack={() => setScreen("menu")}
-          />
-        )}
+        {screen === "guestbook" && <GuestBookScreen onBack={() => setScreen("menu")} />}
         {screen === "camera" && (
           <ComingSoonScreen
             eyebrow="Photobooth Merdeka"
@@ -56,4 +51,3 @@ export function App() {
     </main>
   );
 }
-

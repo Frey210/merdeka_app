@@ -97,6 +97,42 @@ button {
   opacity: 0.3;
 }
 
+.kiosk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  color: #101010;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.kiosk-field input,
+.kiosk-field textarea {
+  width: 100%;
+  min-height: 4.5rem;
+  resize: none;
+  border: 2px solid rgb(0 0 0 / 14%);
+  border-radius: 1.25rem;
+  background: #f7f4ef;
+  padding: 1rem 1.25rem;
+  color: #101010;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.kiosk-field input:focus,
+.kiosk-field textarea:focus {
+  border-color: #ed1c24;
+  outline: 3px solid rgb(237 28 36 / 18%);
+}
+
+.kiosk-field small {
+  align-self: flex-end;
+  color: rgb(16 16 16 / 55%);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -107,4 +143,3 @@ button {
     animation-iteration-count: 1 !important;
   }
 }
-
