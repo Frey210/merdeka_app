@@ -1,0 +1,48 @@
+# Gema Kemerdekaan RI - UPG
+
+Aplikasi kiosk layar sentuh HUT RI ke-81 untuk Bandara Internasional Sultan Hasanuddin Makassar. Monorepo ini berisi frontend React dan backend FastAPI yang dijalankan melalui Docker Compose.
+
+## Struktur
+
+```text
+apps/web/       React, TypeScript, Vite, Tailwind CSS
+apps/api/       FastAPI, SQLAlchemy, Alembic, PostgreSQL
+deploy/nginx/   Nginx SPA dan reverse proxy
+data/photos/    Penyimpanan foto runtime (tidak dilacak Git)
+```
+
+## Menjalankan frontend lokal
+
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
+
+## Menjalankan backend lokal
+
+```powershell
+py -3 -m venv .venv
+.venv\Scripts\python -m pip install -e "./apps/api[dev]"
+.venv\Scripts\python -m uvicorn app.main:app --app-dir apps/api --reload
+```
+
+Dokumentasi API tersedia di `http://localhost:8000/docs` pada mode development.
+
+## Menjalankan dengan Docker
+
+Salin `.env.example` menjadi `.env`, isi secret dan kredensial database, lalu:
+
+```powershell
+docker compose up --build
+```
+
+Origin aplikasi tersedia pada `${APP_BIND_IP}:${APP_HTTP_PORT}`. Cloudflare Tunnel diarahkan ke origin tersebut; FastAPI hanya berada di jaringan internal Docker.
+
+## Keamanan
+
+- Jangan commit `.env` atau `deployment.md`.
+- Gunakan database dan user PostgreSQL khusus aplikasi.
+- Lindungi hostname admin dengan Cloudflare Access dan validasi JWT di origin.
+- Foto disimpan pada volume privat dan hanya diunduh melalui token yang tervalidasi.
+- Tutup Docker API TCP port 2375 sebelum deployment produksi.
+

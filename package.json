@@ -1,0 +1,15 @@
+{
+  "name": "merdeka-upg",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @merdeka/web run dev",
+    "build": "npm --workspace @merdeka/web run build",
+    "test": "npm --workspace @merdeka/web run test",
+    "typecheck": "npm --workspace @merdeka/web run typecheck"
+  }
+}
+

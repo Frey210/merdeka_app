@@ -1,0 +1,35 @@
+# Secrets and machine-specific deployment notes
+.env
+.env.*
+!.env.example
+deployment.md
+deployment,md
+deployment
+
+# Source design package is too large for regular GitHub storage.
+Asset_Design_guideline/
+
+# Frontend
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Runtime data
+data/
+*.log
+
+# Editor and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
