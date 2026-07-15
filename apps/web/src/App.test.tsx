@@ -99,4 +99,19 @@ describe("App", () => {
     expect(await screen.findByText("Kamera siap")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ambil Foto" })).toBeEnabled();
   });
+
+  it("memulai BGM setelah sentuhan pertama dan menyediakan tombol jeda", async () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+    const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
+    render(<App />);
+
+    expect(screen.queryByText("Hari Merdeka")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
+
+    const pauseButton = await screen.findByRole("button", { name: /jeda musik latar/i });
+    expect(play).toHaveBeenCalled();
+    expect(screen.getByText("Hari Merdeka")).toBeInTheDocument();
+    fireEvent.click(pauseButton);
+    expect(pause).toHaveBeenCalled();
+  });
 });

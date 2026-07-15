@@ -1,4 +1,4 @@
-const CACHE_NAME = "merdeka-shell-v3";
+const CACHE_NAME = "merdeka-shell-v4";
 const PRECACHE = [
   "/",
   "/branding/hut-ri-81.png",
@@ -27,7 +27,12 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/") || url.pathname.startsWith("/d/")) {
+  if (
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/d/") ||
+    url.pathname.startsWith("/audio/")
+  ) {
     return;
   }
 

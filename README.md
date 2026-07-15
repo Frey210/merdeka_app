@@ -2,6 +2,8 @@
 
 Aplikasi kiosk layar sentuh HUT RI ke-81 untuk Bandara Internasional Sultan Hasanuddin Makassar. Monorepo ini berisi frontend React dan backend FastAPI yang dijalankan melalui Docker Compose.
 
+BGM memakai playlist lokal `Hari Merdeka`, `Tanah Air`, dan `Bagimu Negeri`. Browser memulai musik setelah sentuhan pertama sesuai kebijakan autoplay; pengguna dapat pause/play dari kontrol di layar.
+
 ## Struktur
 
 ```text
