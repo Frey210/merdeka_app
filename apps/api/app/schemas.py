@@ -76,6 +76,13 @@ class PhotoCreated(BaseModel):
     status: ModerationStatus
 
 
+class ApprovedPhoto(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    created_at: datetime
+
+
 class PhotoDownloadCreated(BaseModel):
     download_url: str
     expires_at: datetime

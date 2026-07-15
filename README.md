@@ -4,7 +4,7 @@ Aplikasi kiosk layar sentuh HUT RI ke-81 untuk Bandara Internasional Sultan Hasa
 
 BGM memakai playlist lokal `Hari Merdeka`, `Tanah Air`, dan `Bagimu Negeri`. Browser memulai musik setelah sentuhan pertama sesuai kebijakan autoplay; pengguna dapat pause/play dari kontrol di layar.
 
-Layar idle menampilkan carousel harapan pengunjung yang telah disetujui dan memiliki persetujuan publik. Data diperbarui setiap 30 detik dan berganti setiap 8 detik; saat kosong atau offline, identitas visual `81` tetap tampil.
+Layar idle menampilkan carousel harapan dan foto pengunjung yang telah disetujui serta memiliki persetujuan publik. Data diperbarui setiap 30 detik dan berganti setiap 8 detik; saat kosong atau offline, identitas visual `81` tetap tampil. Izin publik tidak memengaruhi QR unduh: foto privat tetap dapat diunduh oleh pengunjung selama token QR dan masa retensinya berlaku.
 
 ## Struktur
 

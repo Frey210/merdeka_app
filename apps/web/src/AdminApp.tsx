@@ -166,7 +166,7 @@ export function AdminApp() {
                     </p>
                   </div>
                   <span className="rounded-full bg-black/5 px-3 py-1 text-sm font-bold">
-                    {entry.consent_public ? "Boleh dipublikasi" : "Privat"}
+                    {entry.consent_public ? "Boleh dipublikasi" : "Privat · tidak tampil di idle"}
                   </span>
                 </div>
                 <p className="my-5 whitespace-pre-wrap text-lg">{entry.message}</p>
@@ -175,9 +175,10 @@ export function AdminApp() {
                     <>
                       <button
                         className="rounded-full bg-green-700 px-5 py-2 font-bold text-white disabled:opacity-50"
-                        disabled={workingId === entry.id}
+                        disabled={workingId === entry.id || !entry.consent_public}
                         onClick={() => void moderate(entry.id, "approved")}
                         type="button"
+                        title={!entry.consent_public ? "Harapan privat tidak boleh dipublikasikan" : undefined}
                       >
                         Setujui
                       </button>

@@ -56,6 +56,11 @@ def moderate_guest_entry(
     db: DatabaseSession,
 ) -> GuestEntry:
     entry = get_entry_or_404(entry_id, db)
+    if payload.status is ModerationStatus.approved and not entry.consent_public:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Harapan privat tidak dapat disetujui untuk publikasi",
+        )
     entry.status = payload.status
     entry.reviewed_at = datetime.now(UTC)
     entry.reviewed_by = admin.email

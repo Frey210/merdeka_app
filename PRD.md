@@ -65,6 +65,7 @@ Sumber yang ditelaah:
 4. Guest book: nama panggilan/nama, asal daerah, dan harapan; validasi serta persetujuan privasi.
 5. Photobooth dengan kamera, tiga twibbon statis resmi, hitung mundur, ambil ulang, simpan foto, dan QR unduh sementara.
 6. Persetujuan eksplisit untuk menampilkan foto/harapan di layar publik; default tidak setuju.
+   Persetujuan ini hanya mengatur publikasi di layar idle. Foto privat tetap dapat diunduh pemilik sesi melalui QR bertoken selama masa berlakunya.
 7. Dashboard admin terproteksi untuk approve/reject, hapus data, dan melihat status kiosk dasar.
 8. Timeout, pembersihan sesi kamera, serta halaman fallback bila kamera/internet gagal.
 

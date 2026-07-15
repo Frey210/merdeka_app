@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy import select
@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from app.config import Settings, get_settings
 from app.database import get_db
 from app.models import DownloadToken, ModerationStatus, Photo
-from app.schemas import PhotoCreated, PhotoDownloadCreated
+from app.schemas import ApprovedPhoto, PhotoCreated, PhotoDownloadCreated
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 download_router = APIRouter(prefix="/d", tags=["downloads"])
@@ -90,6 +90,45 @@ async def upload_photo(
         destination.unlink(missing_ok=True)
         raise
     return record
+
+
+@router.get("/approved", response_model=list[ApprovedPhoto])
+def list_approved_photos(
+    db: DatabaseSession,
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> list[Photo]:
+    now = datetime.now(UTC)
+    statement = (
+        select(Photo)
+        .where(
+            Photo.status == ModerationStatus.approved,
+            Photo.public_consent.is_(True),
+            Photo.expires_at > now,
+        )
+        .order_by(Photo.created_at.desc())
+        .limit(50)
+    )
+    available = [photo for photo in db.scalars(statement) if Path(photo.storage_path).is_file()]
+    return available[:limit]
+
+
+@router.get("/approved/{photo_id}/content", response_class=FileResponse)
+def approved_photo_content(photo_id: uuid.UUID, db: DatabaseSession) -> FileResponse:
+    photo = db.get(Photo, photo_id)
+    now = datetime.now(UTC)
+    if (
+        photo is None
+        or photo.status is not ModerationStatus.approved
+        or not photo.public_consent
+        or photo.expires_at <= now
+        or not Path(photo.storage_path).is_file()
+    ):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto tidak tersedia")
+    return FileResponse(
+        photo.storage_path,
+        media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=60"},
+    )
 
 
 @router.post("/{photo_id}/download", response_model=PhotoDownloadCreated)
