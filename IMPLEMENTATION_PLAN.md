@@ -27,18 +27,18 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 ### Fase 1 - Fondasi dan desain
 
 - [x] Inisialisasi monorepo React/TypeScript/Vite dan FastAPI, lint, unit test, serta Docker Compose.
-- [ ] Salin aset yang diizinkan ke `public/assets`; gunakan file PNG logo resmi, font Saira lokal, dan foto hasil kurasi.
-- [ ] Definisikan design tokens: `brand-red #ED1C24`, putih, hitam, ukuran sentuh >= 56 px, dan skala teks kiosk.
+- [x] Salin aset yang diizinkan ke `public/assets`; gunakan file PNG logo resmi, font Saira lokal, dan foto hasil kurasi.
+- [x] Definisikan design tokens: `brand-red #ED1C24`, putih, hitam, ukuran sentuh >= 56 px, dan skala teks kiosk.
 - [ ] Buat enam layar: Idle, Menu, Timeline, Guest Book, Kamera, Preview/QR; tambah dashboard admin terpisah.
 - [ ] Lakukan review desain dengan komunikasi/brand sebelum coding detail.
 
 ### Fase 2 - Alur kiosk offline
 
-- [ ] Buat state machine layar: `idle`, `menu`, `timeline`, `guestbook`, `camera`, `preview`, `download`.
-- [ ] Implementasi timer global 90 detik yang mengecualikan countdown dan mematikan stream kamera saat reset.
-- [ ] Buat timeline data-driven dari JSON lokal (maksimum enam kartu, teks sumber tervalidasi).
-- [ ] Tambahkan cache aset aplikasi dan halaman offline melalui service worker hanya untuk shell/timeline.
-- [ ] Tambahkan halaman bantuan perangkat: kamera tidak tersedia, izin ditolak, internet putus.
+- [x] Buat state machine layar: `idle`, `menu`, `timeline`, `guestbook`, `camera`, `preview`, `download`.
+- [x] Implementasi timer global 90 detik yang mengecualikan countdown dan mematikan stream kamera saat reset.
+- [x] Buat timeline data-driven dari JSON lokal (maksimum enam kartu, teks sumber tervalidasi).
+- [x] Tambahkan cache aset aplikasi dan halaman offline melalui service worker hanya untuk shell/timeline.
+- [x] Tambahkan indikator koneksi dan fallback menu/timeline ketika internet putus; fallback kamera dilengkapi pada fase photobooth.
 
 ### Fase 3 - Guest book dan admin
 

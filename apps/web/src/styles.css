@@ -18,6 +18,8 @@
 
 @theme {
   --color-brand-red: #ed1c24;
+  --color-ink: #101010;
+  --color-warm-white: #f7f4ef;
   --font-sans: "Saira Semi Condensed", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -44,5 +46,65 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-button-primary {
+  min-height: 4.5rem;
+  border-radius: 9999px;
+  background: #ed1c24;
+  padding: 1rem 2.5rem;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.touch-button-primary:focus-visible,
+.touch-button-secondary:focus-visible,
+.timeline-arrow:focus-visible {
+  outline: 4px solid #ed1c24;
+  outline-offset: 4px;
+}
+
+.touch-button-secondary {
+  min-height: 3.75rem;
+  border: 2px solid rgb(0 0 0 / 12%);
+  border-radius: 9999px;
+  background: #fff;
+  padding: 0.75rem 1.75rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.timeline-arrow {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 25%);
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.timeline-arrow:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
