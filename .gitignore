@@ -24,7 +24,7 @@ __pycache__/
 venv/
 
 # Runtime data
-data/
+/data/
 *.log
 
 # Editor and OS
@@ -32,4 +32,3 @@ data/
 .vscode/
 .DS_Store
 Thumbs.db
-
