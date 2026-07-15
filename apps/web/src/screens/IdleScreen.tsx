@@ -19,7 +19,7 @@ export function IdleScreen({ onStart }: IdleScreenProps) {
         aria-label="Sentuh untuk memulai pengalaman Gema Kemerdekaan RI"
       >
         <div className="mx-auto flex min-h-screen max-w-[1920px] flex-col px-8 py-6 lg:px-16 lg:py-8">
-          <BrandHeader />
+          <BrandHeader hutLogoVariant="white" />
           <section className="grid flex-1 items-center gap-12 py-10 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="max-w-5xl">
               <p className="mb-5 text-2xl font-bold uppercase tracking-[0.16em] lg:text-3xl">

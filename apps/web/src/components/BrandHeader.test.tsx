@@ -21,4 +21,10 @@ describe("BrandHeader", () => {
     screen.getByRole("button", { name: "Kembali ke menu utama" }).click();
     expect(onHome).toHaveBeenCalledOnce();
   });
+
+  it("mendukung logo HUT putih untuk latar merah", () => {
+    render(<BrandHeader hutLogoVariant="white" />);
+
+    expect(screen.getByAltText("HUT ke-81 Republik Indonesia")).toHaveClass("brightness-0", "invert");
+  });
 });

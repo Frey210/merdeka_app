@@ -1,8 +1,9 @@
 interface BrandHeaderProps {
   onHome?: () => void;
+  hutLogoVariant?: "default" | "white";
 }
 
-export function BrandHeader({ onHome }: BrandHeaderProps) {
+export function BrandHeader({ onHome, hutLogoVariant = "default" }: BrandHeaderProps) {
   const content = (
     <>
       <div
@@ -37,7 +38,7 @@ export function BrandHeader({ onHome }: BrandHeaderProps) {
           <span className="h-9 bg-black/12 lg:h-11" aria-hidden="true" />
           <div className="flex h-12 w-28 items-center justify-center px-2 lg:h-16 lg:w-40 lg:px-3">
             <img
-              className="max-h-full w-full object-contain"
+              className="max-h-full w-[145%] max-w-none object-contain"
               src="/branding/upg.png"
               alt="Bandara Sultan Hasanuddin Makassar"
             />
@@ -45,7 +46,9 @@ export function BrandHeader({ onHome }: BrandHeaderProps) {
         </div>
       </div>
       <img
-        className="h-16 w-auto object-contain lg:h-24"
+        className={`h-24 w-auto shrink-0 object-contain lg:h-32 ${
+          hutLogoVariant === "white" ? "brightness-0 invert" : ""
+        }`}
         src="/branding/hut-ri-81.png"
         alt="HUT ke-81 Republik Indonesia"
       />
@@ -53,7 +56,7 @@ export function BrandHeader({ onHome }: BrandHeaderProps) {
   );
 
   return (
-    <header className="flex min-h-24 items-center justify-between gap-8" aria-label="Identitas penyelenggara">
+    <header className="flex min-h-32 items-center justify-between gap-8" aria-label="Identitas penyelenggara">
       {onHome ? (
         <button
           className="contents focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-8 focus-visible:outline-brand-red"
