@@ -40,3 +40,32 @@ class ApprovedGuestEntry(BaseModel):
     message: str
     created_at: datetime
 
+
+class AdminIdentity(BaseModel):
+    email: str
+    subject: str
+
+
+class AdminGuestEntry(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    display_name: str
+    origin: str
+    message: str
+    status: ModerationStatus
+    consent_public: bool
+    created_at: datetime
+    reviewed_at: datetime | None
+    reviewed_by: str | None
+
+
+class ModerationUpdate(BaseModel):
+    status: ModerationStatus
+
+    @field_validator("status")
+    @classmethod
+    def disallow_pending(cls, value: ModerationStatus) -> ModerationStatus:
+        if value is ModerationStatus.pending:
+            raise ValueError("Status moderasi harus approved atau rejected")
+        return value

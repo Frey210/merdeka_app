@@ -42,10 +42,10 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 
 ### Fase 3 - Guest book dan admin
 
-- [ ] Buat database/user PostgreSQL khusus, tabel melalui Alembic, dan volume foto privat.
-- [ ] Buat endpoint FastAPI `submit-entry` untuk validasi, sanitasi, throttling, dan insert `pending`.
-- [ ] Buat endpoint aman `approved-feed` yang hanya mengembalikan data yang telah disetujui dan sudah diminimalkan.
-- [ ] Implementasi admin dengan Cloudflare Access: daftar antrean, preview, approve, reject, hapus, dan audit log.
+- [x] Buat database/user PostgreSQL khusus, tabel melalui Alembic, dan volume foto privat.
+- [x] Buat endpoint FastAPI `submit-entry` untuk validasi, sanitasi, dan insert `pending`; throttling diselesaikan pada fase hardening.
+- [x] Buat endpoint aman `approved-feed` yang hanya mengembalikan data yang telah disetujui dan sudah diminimalkan.
+- [x] Implementasi admin dengan validasi JWT Cloudflare Access: daftar antrean, preview, approve, reject, hapus, dan audit log. Konfigurasi Team Domain/AUD tetap wajib sebelum digunakan.
 - [ ] Tambahkan realtime/polling 30 detik hanya pada feed `approved` agar idle terbarui tanpa me-refresh seluruh aplikasi.
 
 ### Fase 4 - Photobooth dan QR

@@ -13,6 +13,7 @@ dependencies = [
   "pillow>=11,<13",
   "psycopg[binary]>=3.2,<4",
   "pydantic-settings>=2.10,<3",
+  "pyjwt[crypto]>=2.10,<3",
   "sqlalchemy>=2.0,<2.2",
 ]
 
