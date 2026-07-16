@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { getGameDurationMs } from "./DinoGame";
+import { advanceGameDurationMs } from "./DinoGame";
 
-describe("getGameDurationMs", () => {
-  it("treats zero as a valid Phaser start time", () => {
-    expect(getGameDurationMs(1_550, 0)).toBe(1_550);
+describe("advanceGameDurationMs", () => {
+  it("starts every game instance from zero", () => {
+    expect(advanceGameDurationMs(0, 16)).toBe(16);
   });
 
-  it("returns null only before the game clock is initialized", () => {
-    expect(getGameDurationMs(1_550, null)).toBeNull();
+  it("accumulates only the frame delta instead of a global clock value", () => {
+    expect(advanceGameDurationMs(1_550, 16)).toBe(1_566);
   });
 
-  it("never returns a negative duration", () => {
-    expect(getGameDurationMs(10, 20)).toBe(0);
+  it("ignores negative deltas and caps a run at two minutes", () => {
+    expect(advanceGameDurationMs(10, -20)).toBe(10);
+    expect(advanceGameDurationMs(119_990, 20)).toBe(120_000);
   });
 });

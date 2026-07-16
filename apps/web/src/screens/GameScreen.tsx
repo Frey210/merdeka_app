@@ -15,11 +15,17 @@ interface GameScreenProps {
 
 type Stage = "intro" | "loading" | "playing" | "result" | "leaderboard";
 
+interface CompletedRun {
+  result: DinoGameResult;
+  sessionId: string;
+  online: boolean;
+}
+
 export function GameScreen({ onBack }: GameScreenProps) {
   const [stage, setStage] = useState<Stage>("intro");
   const [session, setSession] = useState<GameSessionCreated | null>(null);
   const [onlineSession, setOnlineSession] = useState(true);
-  const [result, setResult] = useState<DinoGameResult | null>(null);
+  const [completedRun, setCompletedRun] = useState<CompletedRun | null>(null);
   const [verifiedScore, setVerifiedScore] = useState<number | null>(null);
   const [rank, setRank] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState("");
@@ -27,7 +33,11 @@ export function GameScreen({ onBack }: GameScreenProps) {
   const [period, setPeriod] = useState<"daily" | "all-time">("daily");
   const [error, setError] = useState("");
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const gameContainerRef = useRef<HTMLDivElement>(null);
+  const activeRunRef = useRef(0);
+  const startingRef = useRef(false);
+  const gameDestroyRef = useRef<(() => void) | null>(null);
 
   const loadLeaderboard = useCallback(async (selectedPeriod: "daily" | "all-time") => {
     try {
@@ -44,61 +54,84 @@ export function GameScreen({ onBack }: GameScreenProps) {
 
   useEffect(() => {
     if (stage !== "playing" || !session || !gameContainerRef.current) return;
+    const runId = activeRunRef.current;
     let disposed = false;
     let destroy: (() => void) | undefined;
     void import("../game/DinoGame").then(async ({ mountDinoGame }) => {
       if (disposed || !gameContainerRef.current) return;
-      destroy = await mountDinoGame({
+      const teardown = await mountDinoGame({
         parent: gameContainerRef.current,
         seed: session.seed,
         onGameOver: (gameResult) => {
-          if (disposed) return;
-          setResult(gameResult);
+          if (disposed || activeRunRef.current !== runId) return;
+          setCompletedRun({ result: gameResult, sessionId: session.id, online: onlineSession });
           setStage("result");
         },
       });
+      if (disposed || activeRunRef.current !== runId) {
+        teardown();
+        return;
+      }
+      destroy = teardown;
+      gameDestroyRef.current = teardown;
     });
     return () => {
       disposed = true;
       destroy?.();
+      if (gameDestroyRef.current === destroy) gameDestroyRef.current = null;
     };
-  }, [session, stage]);
+  }, [onlineSession, session, stage]);
 
   async function startGame() {
+    if (startingRef.current) return;
+    startingRef.current = true;
+    const runId = activeRunRef.current + 1;
+    activeRunRef.current = runId;
+    gameDestroyRef.current?.();
+    gameDestroyRef.current = null;
     setStage("loading");
+    setSession(null);
     setError("");
     setDisplayName("");
-    setResult(null);
+    setCompletedRun(null);
     setRank(null);
     setVerifiedScore(null);
     setKeyboardOpen(false);
+    setSubmitting(false);
+    let nextSession: GameSessionCreated;
+    let nextOnlineSession: boolean;
     try {
-      const created = await createGameSession();
-      setSession(created);
-      setOnlineSession(true);
+      nextSession = await createGameSession();
+      nextOnlineSession = true;
     } catch {
-      setSession({
+      nextSession = {
         id: `offline-${Date.now()}`,
         seed: Math.floor(Math.random() * 2_147_483_647),
         expires_at: new Date(Date.now() + 300_000).toISOString(),
-      });
-      setOnlineSession(false);
+      };
+      nextOnlineSession = false;
     }
-    setStage("playing");
+    if (activeRunRef.current === runId) {
+      setSession(nextSession);
+      setOnlineSession(nextOnlineSession);
+      setStage("playing");
+      startingRef.current = false;
+    }
   }
 
   async function submitScore() {
-    if (!session || !result || displayName.trim().length < 2) return;
-    if (!onlineSession) {
+    if (!completedRun || displayName.trim().length < 2 || submitting) return;
+    if (!completedRun.online) {
       setError("Game dimainkan offline. Skor lokal tidak dapat masuk leaderboard.");
       return;
     }
     setError("");
+    setSubmitting(true);
     try {
-      const submitted = await finishGameSession(session.id, {
+      const submitted = await finishGameSession(completedRun.sessionId, {
         display_name: displayName,
-        duration_ms: result.durationMs,
-        jump_times_ms: result.jumpTimesMs,
+        duration_ms: completedRun.result.durationMs,
+        jump_times_ms: completedRun.result.jumpTimesMs,
       });
       setVerifiedScore(submitted.score);
       setRank(submitted.rank);
@@ -106,6 +139,8 @@ export function GameScreen({ onBack }: GameScreenProps) {
       setStage("leaderboard");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Skor belum dapat dikirim.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -158,10 +193,10 @@ export function GameScreen({ onBack }: GameScreenProps) {
               </>
             )}
 
-            {stage === "result" && result && (
+            {stage === "result" && completedRun && (
               <div className="rounded-[3rem] bg-white p-9 text-ink shadow-2xl lg:p-12">
                 <p className="text-xl font-bold uppercase tracking-[0.18em] text-brand-red">Perjalanan selesai</p>
-                <p className="mt-2 text-7xl font-bold">{result.score.toString().padStart(4, "0")}</p>
+                <p className="mt-2 text-7xl font-bold">{completedRun.result.score.toString().padStart(4, "0")}</p>
                 <p className="mt-2 text-2xl text-black/55">Masukkan nama panggilan untuk mengabadikan skor.</p>
                 <label className="kiosk-field mt-7">
                   Nama panggilan
@@ -178,8 +213,8 @@ export function GameScreen({ onBack }: GameScreenProps) {
                 </label>
                 {error && <p className="mt-4 rounded-2xl bg-red-50 p-4 text-xl font-bold text-brand-red" role="alert">{error}</p>}
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <button className="touch-button-primary" disabled={displayName.trim().length < 2} type="button" onClick={() => void submitScore()}>Simpan Skor</button>
-                  <button className="touch-button-secondary" type="button" onClick={() => void startGame()}>Main Lagi</button>
+                  <button className="touch-button-primary" disabled={displayName.trim().length < 2 || submitting} type="button" onClick={() => void submitScore()}>{submitting ? "Menyimpan…" : "Simpan Skor"}</button>
+                  <button className="touch-button-secondary" disabled={submitting} type="button" onClick={() => void startGame()}>Main Lagi</button>
                   <button className="touch-button-secondary" type="button" onClick={onBack}>Lewati</button>
                 </div>
               </div>

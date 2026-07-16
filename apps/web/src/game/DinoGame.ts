@@ -12,9 +12,8 @@ interface DinoGameOptions {
   onGameOver: (result: DinoGameResult) => void;
 }
 
-export function getGameDurationMs(now: number, startedAt: number | null): number | null {
-  if (startedAt === null) return null;
-  return Math.max(0, Math.round(now - startedAt));
+export function advanceGameDurationMs(currentDurationMs: number, deltaMs: number): number {
+  return Math.min(120_000, Math.max(0, currentDurationMs + Math.max(0, deltaMs)));
 }
 
 function createSeededRandom(seed: number) {
@@ -36,7 +35,7 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
   let obstacles: PhaserType.Physics.Arcade.Group;
   let scoreText: PhaserType.GameObjects.Text;
   let gameOverText: PhaserType.GameObjects.Text;
-  let startedAt: number | null = null;
+  let elapsedMs = 0;
   let nextObstacleAt = 0;
   let ended = false;
   let currentSpeed = 480;
@@ -179,7 +178,7 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
         const body = dino.body as PhaserType.Physics.Arcade.Body;
         if (body.blocked.down || body.touching.down) {
           dino.setVelocityY(-720);
-          jumpTimesMs.push(getGameDurationMs(this.time.now, startedAt) ?? 0);
+          jumpTimesMs.push(Math.round(elapsedMs));
           this.tweens.add({ targets: dino, angle: -7, duration: 130, yoyo: true });
         }
       };
@@ -187,8 +186,8 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
       this.input.keyboard?.on("keydown-SPACE", jump);
       this.input.keyboard?.on("keydown-UP", jump);
 
-      startedAt = this.time.now;
-      nextObstacleAt = startedAt + 1_400;
+      elapsedMs = 0;
+      nextObstacleAt = 1_400;
     }
 
     spawnObstacle() {
@@ -204,7 +203,7 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
     finishGame() {
       if (ended) return;
       ended = true;
-      const durationMs = Math.min(120_000, getGameDurationMs(this.time.now, startedAt) ?? 0);
+      const durationMs = Math.round(elapsedMs);
       const score = Math.floor(durationMs / 100);
       dino.setTint(0xed1c24);
       dino.stop();
@@ -214,17 +213,17 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
       this.time.delayedCall(650, () => onGameOver({ durationMs, score, jumpTimesMs: [...jumpTimesMs] }));
     }
 
-    update(time: number) {
+    update(_time: number, delta: number) {
       if (ended) return;
-      const durationMs = getGameDurationMs(time, startedAt);
-      if (durationMs === null) return;
+      elapsedMs = advanceGameDurationMs(elapsedMs, delta);
+      const durationMs = elapsedMs;
       currentSpeed = Math.min(860, 480 + durationMs / 160);
       scoreText.setText(Math.floor(durationMs / 100).toString().padStart(4, "0"));
 
-      if (time >= nextObstacleAt) {
+      if (durationMs >= nextObstacleAt) {
         this.spawnObstacle();
         const difficulty = Math.min(450, durationMs / 80);
-        nextObstacleAt = time + 1_350 + random() * 650 - difficulty;
+        nextObstacleAt = durationMs + 1_350 + random() * 650 - difficulty;
       }
       obstacles.getChildren().forEach((child) => {
         const obstacle = child as PhaserType.Physics.Arcade.Sprite;
