@@ -111,7 +111,7 @@ Admin -> antrean moderasi -> approve/reject -> konten approved tampil di idle
 | FR-08 | Admin login, melihat antrean, menyetujui/menolak/menghapus kiriman, serta dapat menonaktifkan konten publik. | P0 |
 | FR-09 | Kiosk mencatat event anonim (mulai, submit, foto, QR tampil, error) tanpa menyimpan identitas perangkat pribadi. | P1 |
 | FR-10 | Admin dapat mengganti kartu timeline dan daftar twibbon melalui konfigurasi terkontrol. | P1 |
-| FR-11 | Menu utama menampilkan fitur ke-4 `Dino Merdeka`; permainan mendukung sentuh/klik/Space, collision, peningkatan kecepatan, pause, dan game over. | P0 |
+| FR-11 | Menu utama menampilkan fitur ke-4 `Dino Merdeka`; setelah aset siap Dino menunggu tap dan countdown `Bersedia - Siap - Mulai`, lalu permainan mendukung sentuh/klik/Space, collision, peningkatan kecepatan, pause, dan game over. | P0 |
 | FR-12 | Input teks publik menyediakan keyboard layar sentuh floating yang dapat ditutup, mendukung huruf besar, hapus, spasi, dan baris baru tanpa menggeser layout utama. | P0 |
 | FR-12 | Server menerbitkan sesi game beserta seed, memvalidasi replay input, menghitung skor final, dan menolak sesi kedaluwarsa atau submit ganda. | P0 |
 | FR-13 | Setelah game over, pemain dapat memasukkan nama panggilan 2-20 karakter untuk leaderboard harian dan keseluruhan. | P0 |

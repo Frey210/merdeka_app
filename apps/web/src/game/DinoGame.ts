@@ -9,7 +9,18 @@ export interface DinoGameResult {
 interface DinoGameOptions {
   parent: HTMLElement;
   seed: number;
+  onReady?: () => void;
   onGameOver: (result: DinoGameResult) => void;
+}
+
+type GamePhase = "waiting" | "countdown" | "running" | "ended";
+
+export const START_COUNTDOWN_STEP_MS = 700;
+const START_COUNTDOWN_CUES = ["BERSEDIA", "SIAP", "MULAI!"] as const;
+
+export function getStartCountdownCue(elapsedMs: number): string | null {
+  const cueIndex = Math.floor(Math.max(0, elapsedMs) / START_COUNTDOWN_STEP_MS);
+  return START_COUNTDOWN_CUES[cueIndex] ?? null;
 }
 
 export function advanceGameDurationMs(currentDurationMs: number, deltaMs: number): number {
@@ -27,7 +38,7 @@ function createSeededRandom(seed: number) {
   };
 }
 
-export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOptions): Promise<() => void> {
+export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoGameOptions): Promise<() => void> {
   const { default: Phaser } = await import("phaser");
   const random = createSeededRandom(seed);
 
@@ -35,9 +46,14 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
   let obstacles: PhaserType.Physics.Arcade.Group;
   let scoreText: PhaserType.GameObjects.Text;
   let gameOverText: PhaserType.GameObjects.Text;
+  let readyText: PhaserType.GameObjects.Text;
+  let countdownText: PhaserType.GameObjects.Text;
+  let instructionText: PhaserType.GameObjects.Text;
+  let phase: GamePhase = "waiting";
+  let countdownElapsedMs = 0;
+  let startRunning = () => undefined;
   let elapsedMs = 0;
   let nextObstacleAt = 0;
-  let ended = false;
   let currentSpeed = 480;
   const jumpTimesMs: number[] = [];
 
@@ -137,7 +153,8 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
         frameRate: 9,
         repeat: -1,
       });
-      dino.play("dino-running");
+      dino.stop();
+      dino.setTexture("dino-merdeka-run-1");
 
       obstacles = this.physics.add.group({ allowGravity: false, immovable: true });
       this.physics.add.collider(dino, obstacles, () => this.finishGame());
@@ -150,14 +167,42 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
           fontStyle: "bold",
         })
         .setOrigin(1, 0);
-      this.add
-        .text(640, 686, "SENTUH LAYAR UNTUK MELOMPAT", {
+      instructionText = this.add
+        .text(640, 686, "SENTUH LAYAR UNTUK MEMULAI", {
           color: "#101010",
           fontFamily: "Saira Semi Condensed",
           fontSize: "24px",
           fontStyle: "bold",
         })
         .setOrigin(0.5);
+
+      readyText = this.add
+        .text(640, 300, "LINTASAN SIAP\nSentuh layar untuk bersiap", {
+          align: "center",
+          backgroundColor: "#ffffff",
+          color: "#101010",
+          fontFamily: "Saira Semi Condensed",
+          fontSize: "42px",
+          fontStyle: "bold",
+          lineSpacing: 12,
+          padding: { x: 48, y: 30 },
+        })
+        .setOrigin(0.5)
+        .setDepth(10);
+
+      countdownText = this.add
+        .text(640, 300, "", {
+          align: "center",
+          backgroundColor: "#ffffff",
+          color: "#ed1c24",
+          fontFamily: "Saira Semi Condensed",
+          fontSize: "76px",
+          fontStyle: "bold",
+          padding: { x: 64, y: 30 },
+        })
+        .setOrigin(0.5)
+        .setDepth(12)
+        .setVisible(false);
 
       gameOverText = this.add
         .text(640, 300, "", {
@@ -173,8 +218,25 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
         .setDepth(20)
         .setVisible(false);
 
-      const jump = () => {
-        if (ended) return;
+      startRunning = () => {
+        phase = "running";
+        elapsedMs = 0;
+        nextObstacleAt = 1_400;
+        countdownText.setVisible(false);
+        instructionText.setText("SENTUH LAYAR UNTUK MELOMPAT");
+        dino.play("dino-running");
+      };
+
+      const handleAction = () => {
+        if (phase === "waiting") {
+          phase = "countdown";
+          countdownElapsedMs = 0;
+          readyText.setVisible(false);
+          countdownText.setText(START_COUNTDOWN_CUES[0]).setVisible(true);
+          instructionText.setText("PERMAINAN AKAN DIMULAI");
+          return;
+        }
+        if (phase !== "running") return;
         const body = dino.body as PhaserType.Physics.Arcade.Body;
         if (body.blocked.down || body.touching.down) {
           dino.setVelocityY(-720);
@@ -182,12 +244,15 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
           this.tweens.add({ targets: dino, angle: -7, duration: 130, yoyo: true });
         }
       };
-      this.input.on("pointerdown", jump);
-      this.input.keyboard?.on("keydown-SPACE", jump);
-      this.input.keyboard?.on("keydown-UP", jump);
+      this.input.on("pointerdown", handleAction);
+      this.input.keyboard?.on("keydown-SPACE", handleAction);
+      this.input.keyboard?.on("keydown-UP", handleAction);
 
+      phase = "waiting";
+      countdownElapsedMs = 0;
       elapsedMs = 0;
       nextObstacleAt = 1_400;
+      onReady?.();
     }
 
     spawnObstacle() {
@@ -201,8 +266,8 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
     }
 
     finishGame() {
-      if (ended) return;
-      ended = true;
+      if (phase !== "running") return;
+      phase = "ended";
       const durationMs = Math.round(elapsedMs);
       const score = Math.floor(durationMs / 100);
       dino.setTint(0xed1c24);
@@ -214,7 +279,17 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
     }
 
     update(_time: number, delta: number) {
-      if (ended) return;
+      if (phase === "countdown") {
+        countdownElapsedMs += Math.max(0, delta);
+        const cue = getStartCountdownCue(countdownElapsedMs);
+        if (cue) {
+          if (countdownText.text !== cue) countdownText.setText(cue);
+        } else {
+          startRunning();
+        }
+        return;
+      }
+      if (phase !== "running") return;
       elapsedMs = advanceGameDurationMs(elapsedMs, delta);
       const durationMs = elapsedMs;
       currentSpeed = Math.min(860, 480 + durationMs / 160);

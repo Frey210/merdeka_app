@@ -21,9 +21,11 @@ import { GameScreen } from "./GameScreen";
 
 describe("GameScreen replay lifecycle", () => {
   const callbacks: Array<(result: DinoGameResult) => void> = [];
+  const readyCallbacks: Array<() => void> = [];
 
   beforeEach(() => {
     callbacks.length = 0;
+    readyCallbacks.length = 0;
     mocks.createGameSession
       .mockReset()
       .mockResolvedValueOnce({ id: "session-1", seed: 81, expires_at: "2026-08-17T00:05:00Z" })
@@ -33,8 +35,9 @@ describe("GameScreen replay lifecycle", () => {
       .mockResolvedValueOnce({ score: 10, rank: 1 })
       .mockResolvedValueOnce({ score: 20, rank: 1 });
     mocks.listLeaderboard.mockReset().mockResolvedValue({ period: "daily", items: [] });
-    mocks.mountDinoGame.mockReset().mockImplementation(async (options: { onGameOver: (result: DinoGameResult) => void }) => {
+    mocks.mountDinoGame.mockReset().mockImplementation(async (options: { onReady?: () => void; onGameOver: (result: DinoGameResult) => void }) => {
       callbacks.push(options.onGameOver);
+      if (options.onReady) readyCallbacks.push(options.onReady);
       return vi.fn();
     });
   });
@@ -44,6 +47,9 @@ describe("GameScreen replay lifecycle", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Mulai Berlari" }));
     await waitFor(() => expect(mocks.mountDinoGame).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("Memuat arena dan aset permainan…")).toBeInTheDocument();
+    act(() => readyCallbacks[0]());
+    expect(screen.queryByText("Memuat arena dan aset permainan…")).not.toBeInTheDocument();
 
     act(() => callbacks[0]({ durationMs: 1_000, score: 10, jumpTimesMs: [500] }));
     fireEvent.change(screen.getByPlaceholderText("Contoh: Garuda81"), { target: { value: "Fariz" } });
@@ -58,6 +64,7 @@ describe("GameScreen replay lifecycle", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Main Lagi" }));
     await waitFor(() => expect(mocks.mountDinoGame).toHaveBeenCalledTimes(2));
+    act(() => readyCallbacks[1]());
     expect(screen.getByLabelText(/Area permainan Dino Merdeka/i)).toBeInTheDocument();
 
     act(() => callbacks[0]({ durationMs: 99_000, score: 990, jumpTimesMs: [] }));

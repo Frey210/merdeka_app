@@ -90,6 +90,7 @@ Keputusan teknis: situs `trex-runner.com` hanya menjadi referensi genre. Jangan 
 
 - [x] Tambahkan menu ke-4 bernomor `04`; ubah layout menu menjadi grid 2x2 yang seimbang pada 1920x1080.
 - [x] Tambahkan state aplikasi `game` dengan intro singkat, gameplay, game over, input nama, dan leaderboard.
+- [x] Tahan gameplay sampai canvas/aset siap; tampilkan Dino idle dan countdown `Bersedia - Siap - Mulai` setelah tap pertama.
 - [x] Implementasi input sentuh/klik/Space untuk melompat, gravity, collision, pooling rintangan, dan peningkatan kecepatan bertahap.
 - [x] Buat generator rintangan deterministik berbasis seed agar permainan dapat diputar ulang dan divalidasi server.
 - [x] Batasi satu sesi maksimal 120 detik dan sediakan tombol kembali saat permainan aktif.

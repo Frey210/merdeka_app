@@ -34,6 +34,8 @@ export function GameScreen({ onBack }: GameScreenProps) {
   const [error, setError] = useState("");
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [gameReady, setGameReady] = useState(false);
+  const [gameLoadError, setGameLoadError] = useState("");
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const activeRunRef = useRef(0);
   const startingRef = useRef(false);
@@ -57,24 +59,35 @@ export function GameScreen({ onBack }: GameScreenProps) {
     const runId = activeRunRef.current;
     let disposed = false;
     let destroy: (() => void) | undefined;
-    void import("../game/DinoGame").then(async ({ mountDinoGame }) => {
-      if (disposed || !gameContainerRef.current) return;
-      const teardown = await mountDinoGame({
-        parent: gameContainerRef.current,
-        seed: session.seed,
-        onGameOver: (gameResult) => {
-          if (disposed || activeRunRef.current !== runId) return;
-          setCompletedRun({ result: gameResult, sessionId: session.id, online: onlineSession });
-          setStage("result");
-        },
-      });
-      if (disposed || activeRunRef.current !== runId) {
-        teardown();
-        return;
+    void (async () => {
+      try {
+        const { mountDinoGame } = await import("../game/DinoGame");
+        if (disposed || !gameContainerRef.current) return;
+        const teardown = await mountDinoGame({
+          parent: gameContainerRef.current,
+          seed: session.seed,
+          onReady: () => {
+            if (disposed || activeRunRef.current !== runId) return;
+            setGameReady(true);
+          },
+          onGameOver: (gameResult) => {
+            if (disposed || activeRunRef.current !== runId) return;
+            setCompletedRun({ result: gameResult, sessionId: session.id, online: onlineSession });
+            setStage("result");
+          },
+        });
+        if (disposed || activeRunRef.current !== runId) {
+          teardown();
+          return;
+        }
+        destroy = teardown;
+        gameDestroyRef.current = teardown;
+      } catch {
+        if (!disposed && activeRunRef.current === runId) {
+          setGameLoadError("Arena permainan gagal dimuat. Silakan coba lagi.");
+        }
       }
-      destroy = teardown;
-      gameDestroyRef.current = teardown;
-    });
+    })();
     return () => {
       disposed = true;
       destroy?.();
@@ -98,6 +111,8 @@ export function GameScreen({ onBack }: GameScreenProps) {
     setVerifiedScore(null);
     setKeyboardOpen(false);
     setSubmitting(false);
+    setGameReady(false);
+    setGameLoadError("");
     let nextSession: GameSessionCreated;
     let nextOnlineSession: boolean;
     try {
@@ -152,13 +167,34 @@ export function GameScreen({ onBack }: GameScreenProps) {
           {!onlineSession && <span className="rounded-full bg-amber-300 px-5 py-3 text-xl font-bold text-ink">Mode offline</span>}
         </div>
         {stage === "loading" ? (
-          <p className="text-4xl font-bold">Menyiapkan lintasan…</p>
+          <div className="text-center" role="status">
+            <span className="mx-auto block size-20 animate-spin rounded-full border-8 border-white/20 border-t-brand-red" aria-hidden="true" />
+            <p className="mt-7 text-4xl font-bold">Menyiapkan sesi permainan…</p>
+          </div>
         ) : (
-          <div
-            className="aspect-video max-h-[calc(100vh-2rem)] w-full max-w-[1600px] overflow-hidden rounded-[2.5rem] border-8 border-white/15 bg-warm-white shadow-2xl"
-            ref={gameContainerRef}
-            aria-label="Area permainan Dino Merdeka. Sentuh layar untuk melompat."
-          />
+          <div className="relative aspect-video max-h-[calc(100vh-2rem)] w-full max-w-[1600px] overflow-hidden rounded-[2.5rem] border-8 border-white/15 bg-warm-white shadow-2xl">
+            <div className="absolute inset-0" ref={gameContainerRef} aria-label="Area permainan Dino Merdeka" />
+            {!gameReady && (
+              <div className="absolute inset-0 z-10 grid place-items-center bg-warm-white text-ink">
+                {gameLoadError ? (
+                  <div className="max-w-2xl px-8 text-center" role="alert">
+                    <p className="text-4xl font-bold text-brand-red">Game belum dapat dibuka</p>
+                    <p className="mt-4 text-2xl text-black/60">{gameLoadError}</p>
+                    <div className="mt-8 flex justify-center gap-4">
+                      <button className="touch-button-primary" type="button" onClick={() => void startGame()}>Coba Lagi</button>
+                      <button className="touch-button-secondary" type="button" onClick={onBack}>Kembali</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center" role="status">
+                    <span className="mx-auto block size-20 animate-spin rounded-full border-8 border-black/10 border-t-brand-red" aria-hidden="true" />
+                    <p className="mt-7 text-4xl font-bold">Memuat arena dan aset permainan…</p>
+                    <p className="mt-3 text-2xl text-black/50">Permainan belum dimulai</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </main>
     );
