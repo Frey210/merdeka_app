@@ -72,6 +72,22 @@ describe("App", () => {
     fetchMock.mockRestore();
   });
 
+  it("membuka keyboard layar saat kolom harapan disentuh", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
+    fireEvent.click(screen.getByRole("button", { name: /harapan untuk bangsa/i }));
+    fireEvent.focus(screen.getByLabelText(/^nama$/i));
+
+    expect(screen.getByLabelText("Keyboard layar sentuh")).toBeInTheDocument();
+    fireEvent.pointerDown(screen.getByRole("button", { name: "a" }));
+    fireEvent.pointerUp(screen.getByRole("button", { name: "a" }));
+    expect(screen.getByLabelText(/^nama$/i)).toHaveValue("a");
+
+    fireEvent.click(screen.getByRole("button", { name: "Tutup keyboard layar" }));
+    expect(screen.queryByLabelText("Keyboard layar sentuh")).not.toBeInTheDocument();
+  });
+
   it("membuka pemberitahuan privasi photobooth sebelum kamera", () => {
     render(<App />);
 

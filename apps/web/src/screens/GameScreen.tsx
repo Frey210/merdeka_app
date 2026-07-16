@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { KioskKeyboard } from "../components/KioskKeyboard";
 import type { DinoGameResult } from "../game/DinoGame";
 import {
   createGameSession,
@@ -25,6 +26,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
   const [period, setPeriod] = useState<"daily" | "all-time">("daily");
   const [error, setError] = useState("");
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
   const loadLeaderboard = useCallback(async (selectedPeriod: "daily" | "all-time") => {
@@ -69,6 +71,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
     setResult(null);
     setRank(null);
     setVerifiedScore(null);
+    setKeyboardOpen(false);
     try {
       const created = await createGameSession();
       setSession(created);
@@ -165,8 +168,10 @@ export function GameScreen({ onBack }: GameScreenProps) {
                   <input
                     autoFocus
                     maxLength={20}
+                    inputMode="none"
                     value={displayName}
                     onChange={(event) => setDisplayName(event.target.value)}
+                    onFocus={() => setKeyboardOpen(true)}
                     placeholder="Contoh: Garuda81"
                   />
                   <small>{displayName.length}/20 · Nama dan skor akan terlihat publik</small>
@@ -221,6 +226,15 @@ export function GameScreen({ onBack }: GameScreenProps) {
           </div>
         </section>
       </div>
+      {stage === "result" && keyboardOpen && (
+        <KioskKeyboard
+          value={displayName}
+          onChange={setDisplayName}
+          onClose={() => setKeyboardOpen(false)}
+          maxLength={20}
+          label="Nama panggilan"
+        />
+      )}
     </main>
   );
 }

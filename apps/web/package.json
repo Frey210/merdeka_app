@@ -16,6 +16,7 @@
     "qrcode": "1.5.4",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "react-simple-keyboard": "^3.8.238",
     "tailwindcss": "4.3.2"
   },
   "devDependencies": {

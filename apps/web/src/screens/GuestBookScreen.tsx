@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import { KioskKeyboard } from "../components/KioskKeyboard";
 import { submitGuestEntry } from "../lib/api";
 
 interface GuestBookScreenProps {
@@ -19,11 +20,20 @@ const initialForm: FormState = {
   consentPublic: false,
 };
 
+type TextFieldName = "displayName" | "origin" | "message";
+
+const fieldSettings: Record<TextFieldName, { label: string; maxLength: number; multiline?: boolean }> = {
+  displayName: { label: "Nama", maxLength: 50 },
+  origin: { label: "Asal daerah", maxLength: 60 },
+  message: { label: "Harapan untuk Indonesia", maxLength: 240, multiline: true },
+};
+
 export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [submittedName, setSubmittedName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeField, setActiveField] = useState<TextFieldName | null>(null);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,6 +49,7 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
       });
       setSubmittedName(form.displayName.trim());
       setForm(initialForm);
+      setActiveField(null);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Harapan belum dapat disimpan.");
     } finally {
@@ -86,8 +97,10 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
             minLength={2}
             maxLength={50}
             autoComplete="off"
+            inputMode="none"
             value={form.displayName}
             onChange={(event) => setForm({ ...form, displayName: event.target.value })}
+            onFocus={() => setActiveField("displayName")}
             placeholder="Nama panggilan atau nama lengkap"
           />
         </label>
@@ -99,8 +112,10 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
             minLength={2}
             maxLength={60}
             autoComplete="off"
+            inputMode="none"
             value={form.origin}
             onChange={(event) => setForm({ ...form, origin: event.target.value })}
+            onFocus={() => setActiveField("origin")}
             placeholder="Contoh: Makassar"
           />
         </label>
@@ -112,8 +127,10 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
             minLength={10}
             maxLength={240}
             rows={3}
+            inputMode="none"
             value={form.message}
             onChange={(event) => setForm({ ...form, message: event.target.value })}
+            onFocus={() => setActiveField("message")}
             placeholder="Tuliskan harapanmu dalam 10–240 karakter"
           />
           <small>{form.message.length} / 240</small>
@@ -141,7 +158,14 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
           </button>
         </div>
       </form>
+      {activeField && (
+        <KioskKeyboard
+          value={form[activeField]}
+          onChange={(value) => setForm((current) => ({ ...current, [activeField]: value }))}
+          onClose={() => setActiveField(null)}
+          {...fieldSettings[activeField]}
+        />
+      )}
     </section>
   );
 }
-

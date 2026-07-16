@@ -39,6 +39,7 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 - [x] Buat timeline data-driven dari JSON lokal (maksimum enam kartu, teks sumber tervalidasi).
 - [x] Tambahkan cache aset aplikasi dan halaman offline melalui service worker hanya untuk shell/timeline.
 - [x] Tambahkan indikator koneksi dan fallback menu/timeline ketika internet putus serta pesan pemulihan saat kamera atau jaringan gagal.
+- [x] Tambahkan keyboard layar sentuh floating untuk seluruh input teks publik tanpa mengubah layout utama kiosk.
 
 ### Fase 3 - Guest book dan admin
 

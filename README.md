@@ -8,6 +8,8 @@ Layar idle menampilkan carousel harapan dan foto pengunjung yang telah disetujui
 
 Fitur keempat `Dino Merdeka` adalah mini game endless runner orisinal berbasis Phaser 3. Game memakai input sentuh layar penuh, dapat dimainkan offline setelah aset termuat, dan menyimpan nama panggilan serta skor terverifikasi ke leaderboard harian/all-time melalui FastAPI.
 
+Input teks publik memakai keyboard layar `react-simple-keyboard` bertema merah-putih. Keyboard tampil sebagai drawer floating pada formulir Harapan untuk Indonesia dan input nama Dino Merdeka sehingga layout kiosk tetap utuh dan keyboard fisik tidak diperlukan.
+
 ## Struktur
 
 ```text

@@ -148,6 +148,153 @@ button {
   font-weight: 400;
 }
 
+@keyframes kiosk-keyboard-enter {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kiosk-keyboard-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.kiosk-keyboard-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: rgb(16 16 16 / 36%);
+  pointer-events: auto;
+}
+
+.kiosk-keyboard-panel {
+  position: absolute;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: max(1rem, env(safe-area-inset-left));
+  width: min(78rem, calc(100% - 2rem));
+  margin-inline: auto;
+  border: 3px solid rgb(255 255 255 / 45%);
+  border-radius: 2.25rem;
+  background: #f7f4ef;
+  padding: 1.25rem;
+  box-shadow: 0 2rem 5rem rgb(16 16 16 / 36%);
+  pointer-events: auto;
+  animation: kiosk-keyboard-enter 180ms ease-out;
+}
+
+.kiosk-keyboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.15rem 0.25rem 0.85rem;
+  color: #101010;
+}
+
+.kiosk-keyboard-heading p {
+  margin: 0;
+  color: #ed1c24;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.kiosk-keyboard-heading strong {
+  font-size: 1.4rem;
+}
+
+.kiosk-keyboard-value {
+  display: inline-block;
+  max-width: min(46rem, 55vw);
+  margin-left: 1rem;
+  overflow: hidden;
+  color: rgb(16 16 16 / 58%);
+  font-size: 1.2rem;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.kiosk-keyboard-heading button {
+  min-width: 9rem;
+  min-height: 3.5rem;
+  border: 0;
+  border-radius: 9999px;
+  background: #ed1c24;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.merdeka-keyboard.hg-theme-default {
+  border-radius: 1.35rem;
+  background: #e8e4de;
+  padding: 0.65rem;
+  font-family: var(--font-sans);
+}
+
+.merdeka-keyboard.hg-theme-default .hg-row {
+  justify-content: center;
+}
+
+.merdeka-keyboard.hg-theme-default .hg-button {
+  height: clamp(3.2rem, 6vh, 4.6rem);
+  border: 1px solid rgb(16 16 16 / 8%);
+  border-bottom: 4px solid rgb(16 16 16 / 14%);
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #101010;
+  font-size: clamp(1.15rem, 1.7vw, 1.7rem);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.merdeka-keyboard.hg-theme-default .hg-button:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+  background: #fff1f1;
+}
+
+.merdeka-keyboard.hg-theme-default .keyboard-action-key {
+  max-width: 10rem;
+  background: #101010;
+  color: #fff;
+  font-size: clamp(0.95rem, 1.25vw, 1.25rem);
+}
+
+.merdeka-keyboard.hg-theme-default .hg-button[data-skbtn="{enter}"] {
+  background: #ed1c24;
+}
+
+.merdeka-keyboard.hg-theme-default .keyboard-space-key {
+  max-width: 34rem;
+}
+
+@media (max-height: 800px) {
+  .kiosk-keyboard-panel {
+    padding: 0.75rem;
+  }
+
+  .kiosk-keyboard-heading {
+    padding-bottom: 0.5rem;
+  }
+
+  .merdeka-keyboard.hg-theme-default .hg-button {
+    height: 2.8rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
