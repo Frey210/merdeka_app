@@ -73,6 +73,73 @@ Rencana ini mengutamakan MVP yang aman untuk area publik dan hanya memakai kompo
 - [ ] Briefing petugas: login admin, approve/reject, restart browser, dan prosedur insiden.
 - [ ] Pantau event, bersihkan data sesuai retensi, lalu ekspor metrik agregat untuk laporan akhir.
 
+### Fase 7 - Mini Game Dino Merdeka (estimasi 6-8 hari kerja)
+
+Keputusan teknis: situs `trex-runner.com` hanya menjadi referensi genre. Jangan embed situs, mengambil JavaScript, atau menyalin asetnya. Game dibuat orisinal dengan Phaser 3 (MIT), aset lokal, dan dynamic import agar bundle halaman utama tidak membesar.
+
+#### 7.1 Desain permainan dan aset (1-1,5 hari)
+
+- [ ] Tetapkan nama final, direkomendasikan `Dino Merdeka: Lari untuk Indonesia`.
+- [ ] Buat sprite dinosaurus orisinal yang membawa bendera Indonesia; jangan menyalin siluet/aset Chrome Dino.
+- [ ] Buat rintangan bertema bandara/Indonesia yang aman secara visual: cone, koper, awan, dan gap kecil.
+- [ ] Siapkan animasi lari, lompat, game over, serta SFX lokal bebas lisensi; BGM utama diturunkan volumenya selama game.
+- [ ] Tetapkan canvas logis 1280x720, target 60 FPS, rasio responsif, dan target sentuh seluruh area permainan.
+
+#### 7.2 Gameplay MVP (1,5-2 hari)
+
+- [ ] Tambahkan menu ke-4 bernomor `04`; ubah layout menu menjadi grid 2x2 yang seimbang pada 1920x1080.
+- [ ] Tambahkan state aplikasi `game` dengan intro singkat, gameplay, game over, input nama, dan leaderboard.
+- [ ] Implementasi input sentuh/klik/Space untuk melompat, gravity, collision, pooling rintangan, dan peningkatan kecepatan bertahap.
+- [ ] Buat generator rintangan deterministik berbasis seed agar permainan dapat diputar ulang dan divalidasi server.
+- [ ] Batasi satu sesi maksimal 120 detik; tombol kembali memerlukan konfirmasi saat permainan aktif.
+- [ ] Sediakan fallback bila WebGL gagal dengan renderer Canvas Phaser dan pesan ramah bila perangkat tidak mendukung.
+
+#### 7.3 Leaderboard dan validasi skor (2 hari)
+
+- [ ] Tambahkan migrasi tabel `game_sessions` dan `leaderboard_entries` beserta indeks skor menurun/waktu menaik.
+- [ ] `POST /api/v1/game/sessions`: buat UUID, seed acak, versi konfigurasi, serta masa berlaku 5 menit.
+- [ ] Client merekam waktu input lompat, bukan mengirim skor yang dipercaya langsung.
+- [ ] `POST /api/v1/game/sessions/{id}/finish`: server menjalankan ulang simulasi deterministik, menghitung skor, dan menolak replay mustahil, sesi kedaluwarsa, atau submit kedua.
+- [ ] `GET /api/v1/game/leaderboard?period=daily|all-time&limit=10`: kembalikan hanya nama panggilan, skor, dan waktu yang diperlukan.
+- [ ] Validasi nama 2-20 karakter, normalisasi spasi/control character, blocklist istilah tidak pantas, dan rate limit pembuatan/submit sesi.
+- [ ] Setelah submit, tampilkan Top 10, peringkat pemain, skor pribadi, dan tombol `Main Lagi`.
+
+#### 7.4 Admin, privasi, dan retensi (0,5-1 hari)
+
+- [ ] Tambahkan tab admin `Leaderboard` untuk mencari, menyembunyikan, atau menghapus entri; catat audit event.
+- [ ] Tampilkan pemberitahuan bahwa nama panggilan dan skor akan terlihat publik sebelum submit.
+- [ ] Jangan simpan IP, fingerprint, nama lengkap wajib, atau data perjalanan; nama panggilan boleh dikosongkan untuk tidak masuk leaderboard.
+- [ ] Tetapkan retensi leaderboard sampai akhir event + 30 hari, kemudian purge otomatis sesuai keputusan pemilik bisnis.
+- [ ] Saat API offline, game tetap dapat dimainkan tetapi hasil hanya tampil lokal dan tidak diantrikan bersama nama pemain.
+
+#### 7.5 Test dan UAT (1-1,5 hari)
+
+- [ ] Unit test physics deterministik, seed, collision, scaling skor, normalisasi nama, dan validasi replay server.
+- [ ] Test keamanan: skor palsu, replay dimodifikasi, submit ganda, sesi kedaluwarsa, flood sesi, dan nama tidak pantas.
+- [ ] E2E: menu -> game -> game over -> nama -> leaderboard -> main lagi -> kembali menu.
+- [ ] Uji 30 menit berulang tanpa memory leak, target 60 FPS, input touchscreen, keyboard, resolusi 1920x1080 dan portrait.
+- [ ] UAT tingkat kesulitan dengan minimal 5 pengguna; target sesi pertama 20-45 detik dan instruksi dapat dipahami tanpa petugas.
+
+#### Kontrak API yang direncanakan
+
+| Endpoint | Fungsi | Aturan utama |
+| --- | --- | --- |
+| `POST /api/v1/game/sessions` | Memulai sesi | Rate limit, seed dari server, berlaku 5 menit. |
+| `POST /api/v1/game/sessions/{id}/finish` | Validasi replay dan simpan skor | Satu kali, skor dihitung server, nama opsional. |
+| `GET /api/v1/game/leaderboard` | Top harian/all-time | Maksimum 10-20 baris, cache pendek. |
+| `GET /api/v1/admin/leaderboard` | Daftar moderasi | Wajib Cloudflare Access. |
+| `PATCH /api/v1/admin/leaderboard/{id}` | Sembunyikan/pulihkan entri | Audit wajib. |
+
+#### Kriteria penerimaan mini game
+
+1. Game tidak memuat iframe, iklan, analytics, atau aset pihak ketiga saat runtime.
+2. Dino terlihat membawa bendera merah-putih tanpa mengganggu keterbacaan karakter dan obstacle.
+3. Menu utama tetap tampil utuh sebagai grid 2x2 dan fitur lama tidak mengalami regresi.
+4. Server menjadi sumber kebenaran skor; manipulasi nilai langsung dari DevTools ditolak.
+5. Leaderboard menampilkan Top 10 dan peringkat pemain maksimal 2 detik setelah submit pada jaringan normal.
+6. Nama tidak disimpan bila pemain memilih melewati leaderboard; admin dapat menyembunyikan entri dalam satu tindakan.
+7. Game tetap dapat dimainkan saat API tidak tersedia, dengan penjelasan bahwa skor tidak masuk leaderboard.
+
 ## Arsitektur Target
 
 ```text

@@ -60,7 +60,7 @@ Sumber yang ditelaah:
 ### MVP (wajib sebelum pembukaan)
 
 1. Layar idle dengan ajakan sentuh dan rotasi konten yang telah disetujui.
-2. Menu utama: Jejak Sejarah, Tulis Harapan, dan Photobooth.
+2. Menu utama: Jejak Sejarah, Tulis Harapan, Photobooth, dan mini game Dino Merdeka.
 3. Timeline sejarah offline, maksimal enam kartu dan dapat di-swipe/ditekan.
 4. Guest book: nama panggilan/nama, asal daerah, dan harapan; validasi serta persetujuan privasi.
 5. Photobooth dengan kamera, tiga twibbon statis resmi, hitung mundur, ambil ulang, simpan foto, dan QR unduh sementara.
@@ -68,6 +68,7 @@ Sumber yang ditelaah:
    Persetujuan ini hanya mengatur publikasi di layar idle. Foto privat tetap dapat diunduh pemilik sesi melalui QR bertoken selama masa berlakunya.
 7. Dashboard admin terproteksi untuk approve/reject, hapus data, dan melihat status kiosk dasar.
 8. Timeout, pembersihan sesi kamera, serta halaman fallback bila kamera/internet gagal.
+9. Mini game `Dino Merdeka`: endless runner orisinal bertema Indonesia dengan leaderboard nama panggilan dan skor.
 
 ### Di luar MVP
 
@@ -83,13 +84,14 @@ Sumber yang ditelaah:
 Idle -> sentuh layar -> menu
                        |- Timeline -> menu
                        |- Guest book -> terima kasih -> (foto | menu)
-                       `- Photobooth -> preview -> simpan -> QR -> menu
+                       |- Photobooth -> preview -> simpan -> QR -> menu
+                       `- Dino Merdeka -> bermain -> nama + skor -> leaderboard -> menu
 
 Admin -> antrean moderasi -> approve/reject -> konten approved tampil di idle
 ```
 
 1. Saat idle, aplikasi menampilkan identitas HUT RI 81, ajakan sentuh, dan kartu ucapan/foto yang telah disetujui.
-2. Penumpang memilih satu dari tiga aktivitas.
+2. Penumpang memilih satu dari empat aktivitas.
 3. Guest book disimpan dalam status `pending`; tidak akan pernah langsung muncul pada layar publik.
 4. Photobooth mengakses kamera setelah pengguna menekan mulai. Foto final adalah gabungan frame video dan twibbon di Canvas.
 5. Setelah foto tersimpan, kiosk menampilkan QR yang hanya dapat digunakan selama 24 jam. Pengguna dapat kembali ke menu atau kiosk kembali idle otomatis.
@@ -109,6 +111,10 @@ Admin -> antrean moderasi -> approve/reject -> konten approved tampil di idle
 | FR-08 | Admin login, melihat antrean, menyetujui/menolak/menghapus kiriman, serta dapat menonaktifkan konten publik. | P0 |
 | FR-09 | Kiosk mencatat event anonim (mulai, submit, foto, QR tampil, error) tanpa menyimpan identitas perangkat pribadi. | P1 |
 | FR-10 | Admin dapat mengganti kartu timeline dan daftar twibbon melalui konfigurasi terkontrol. | P1 |
+| FR-11 | Menu utama menampilkan fitur ke-4 `Dino Merdeka`; permainan mendukung sentuh/klik/Space, collision, peningkatan kecepatan, pause, dan game over. | P0 |
+| FR-12 | Server menerbitkan sesi game beserta seed, memvalidasi replay input, menghitung skor final, dan menolak sesi kedaluwarsa atau submit ganda. | P0 |
+| FR-13 | Setelah game over, pemain dapat memasukkan nama panggilan 2-20 karakter untuk leaderboard harian dan keseluruhan. | P0 |
+| FR-14 | Admin dapat menyembunyikan/menghapus nama atau skor yang tidak pantas dan seluruh perubahan tercatat pada audit log. | P0 |
 
 ## 8. Kebutuhan Nonfungsional
 
@@ -135,6 +141,7 @@ Admin -> antrean moderasi -> approve/reject -> konten approved tampil di idle
 | Admin | Cloudflare Access + validasi JWT pada FastAPI | Melindungi dashboard di edge sekaligus mencegah bypass langsung ke origin. |
 | Anti-spam | Validasi FastAPI + rate limit origin/Cloudflare | Mencegah flood tanpa mengumpulkan data tambahan. |
 | QR | `qrcode` (open-source) | QR dibuat di browser dari URL unduh bertoken. |
+| Mini game | Phaser 3 + aset orisinal lokal | Gratis/MIT, cocok untuk Canvas 2D, input sentuh, collision, dan dimuat terpisah hanya saat game dibuka. |
 | Monitoring | Structured application log + health endpoint | Tidak menambah layanan berbayar dan cukup untuk MVP; Sentry dapat ditambahkan kemudian. |
 
 ### Topologi deployment yang disepakati
@@ -154,6 +161,8 @@ Admin -> antrean moderasi -> approve/reject -> konten approved tampil di idle
 | `download_tokens` | `id`, `photo_id`, `token_hash`, `expires_at`, `used_at?` |
 | `content_items` | `id`, `type`, `title`, `body`, `asset_path`, `sort_order`, `active` |
 | `audit_events` | `id`, `actor_type`, `action`, `entity_type`, `entity_id`, `created_at` |
+| `game_sessions` | `id`, `seed`, `config_version`, `started_at`, `expires_at`, `completed_at`, `verified_score` |
+| `leaderboard_entries` | `id`, `game_session_id`, `display_name`, `score`, `status`, `created_at`, `hidden_at?` |
 
 FastAPI menjadi satu-satunya akses data dari browser. User database aplikasi tidak memiliki hak superuser; endpoint publik hanya dapat membuat data `pending` dan membaca proyeksi `approved`. Endpoint admin memerlukan identitas Cloudflare Access yang tervalidasi dan seluruh aksi moderasi dicatat pada audit log.
 
@@ -177,6 +186,7 @@ FastAPI menjadi satu-satunya akses data dari browser. User database aplikasi tid
 6. Admin dapat approve/reject dari perangkat terpisah dan hasilnya muncul/hilang pada idle maksimal 30 detik.
 7. Kiosk diuji minimal 4 jam terus-menerus, termasuk cabut/pasang internet dan kamera.
 8. Tim operasional memiliki SOP start, restart, moderasi, serta eskalasi insiden.
+9. Mini game stabil pada 60 FPS di perangkat kiosk, skor tidak dapat dikirim tanpa sesi valid, dan leaderboard memperlihatkan peringkat pemain maksimal 2 detik setelah submit.
 
 ## 13. Keputusan yang Masih Memerlukan Konfirmasi Pemilik Bisnis
 
