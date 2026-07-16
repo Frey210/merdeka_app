@@ -6,6 +6,8 @@ BGM memakai playlist lokal `Hari Merdeka`, `Tanah Air`, dan `Bagimu Negeri`. Bro
 
 Layar idle menampilkan carousel harapan dan foto pengunjung yang telah disetujui serta memiliki persetujuan publik. Data diperbarui setiap 30 detik dan berganti setiap 8 detik; saat kosong atau offline, identitas visual `81` tetap tampil. Izin publik tidak memengaruhi QR unduh: foto privat tetap dapat diunduh oleh pengunjung selama token QR dan masa retensinya berlaku.
 
+Fitur keempat `Dino Merdeka` adalah mini game endless runner orisinal berbasis Phaser 3. Game memakai input sentuh layar penuh, dapat dimainkan offline setelah aset termuat, dan menyimpan nama panggilan serta skor terverifikasi ke leaderboard harian/all-time melalui FastAPI.
+
 ## Struktur
 
 ```text

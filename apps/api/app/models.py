@@ -2,7 +2,18 @@ import uuid
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -80,3 +91,37 @@ class AuditEvent(Base):
     entity_type: Mapped[str] = mapped_column(String(50))
     entity_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class GameSession(Base):
+    __tablename__ = "game_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    seed: Mapped[int] = mapped_column(BigInteger)
+    config_version: Mapped[str] = mapped_column(String(20), default="v1")
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    verified_score: Mapped[int | None] = mapped_column(Integer)
+    input_replay: Mapped[list[int] | None] = mapped_column(JSON)
+    leaderboard_entry: Mapped["LeaderboardEntry | None"] = relationship(
+        back_populates="game_session",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+class LeaderboardEntry(Base):
+    __tablename__ = "leaderboard_entries"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    game_session_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("game_sessions.id", ondelete="CASCADE"), unique=True, index=True
+    )
+    display_name: Mapped[str] = mapped_column(String(20))
+    score: Mapped[int] = mapped_column(Integer, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+    hidden_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    game_session: Mapped[GameSession] = relationship(back_populates="leaderboard_entry")

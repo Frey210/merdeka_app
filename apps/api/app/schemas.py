@@ -98,3 +98,58 @@ class AdminPhoto(BaseModel):
     expires_at: datetime
     reviewed_at: datetime | None
     reviewed_by: str | None
+
+
+class GameSessionCreated(BaseModel):
+    id: uuid.UUID
+    seed: int
+    expires_at: datetime
+
+
+class GameFinishInput(BaseModel):
+    display_name: str = Field(min_length=2, max_length=20)
+    duration_ms: int = Field(ge=500, le=120_000)
+    jump_times_ms: list[int] = Field(max_length=500)
+
+    @field_validator("display_name", mode="before")
+    @classmethod
+    def normalize_display_name(cls, value: object) -> object:
+        if not isinstance(value, str):
+            return value
+        normalized = " ".join(value.split())
+        if CONTROL_CHARACTERS.search(normalized):
+            raise ValueError("Nama mengandung karakter yang tidak diizinkan")
+        return normalized
+
+
+class GameFinishResult(BaseModel):
+    score: int
+    rank: int
+
+
+class LeaderboardItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    rank: int
+    display_name: str
+    score: int
+    created_at: datetime
+
+
+class LeaderboardResponse(BaseModel):
+    period: str
+    items: list[LeaderboardItem]
+
+
+class AdminLeaderboardEntry(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    display_name: str
+    score: int
+    created_at: datetime
+    hidden_at: datetime | None
+
+
+class LeaderboardVisibilityUpdate(BaseModel):
+    hidden: bool

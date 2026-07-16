@@ -37,4 +37,45 @@ describe("AdminApp", () => {
     expect(screen.getByText("Privat")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Setujui" })).toBeDisabled();
   });
+
+  it("menampilkan dan dapat menyembunyikan skor leaderboard", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith("/admin/session")) {
+        return Response.json({ email: "admin@example.test", subject: "test" });
+      }
+      if (url.includes("/admin/leaderboard/score-id") && init?.method === "PATCH") {
+        return Response.json({
+          id: "score-id",
+          display_name: "Garuda81",
+          score: 810,
+          created_at: "2026-07-16T00:00:00Z",
+          hidden_at: "2026-07-16T01:00:00Z",
+        });
+      }
+      if (url.includes("/admin/leaderboard?")) {
+        return Response.json([
+          {
+            id: "score-id",
+            display_name: "Garuda81",
+            score: 810,
+            created_at: "2026-07-16T00:00:00Z",
+            hidden_at: null,
+          },
+        ]);
+      }
+      return Response.json([]);
+    });
+    render(<AdminApp />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Leaderboard" }));
+    expect(await screen.findByText("Garuda81")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Sembunyikan" }));
+
+    expect(await screen.findByRole("button", { name: "Pulihkan" })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/admin/leaderboard/score-id",
+      expect.objectContaining({ method: "PATCH" }),
+    );
+  });
 });

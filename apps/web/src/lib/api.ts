@@ -23,6 +23,43 @@ export interface ApprovedPhoto {
   created_at: string;
 }
 
+export interface GameSessionCreated {
+  id: string;
+  seed: number;
+  expires_at: string;
+}
+
+export interface GameFinishInput {
+  display_name: string;
+  duration_ms: number;
+  jump_times_ms: number[];
+}
+
+export interface GameFinishResult {
+  score: number;
+  rank: number;
+}
+
+export interface LeaderboardItem {
+  rank: number;
+  display_name: string;
+  score: number;
+  created_at: string;
+}
+
+export interface LeaderboardResponse {
+  period: "daily" | "all-time";
+  items: LeaderboardItem[];
+}
+
+export interface AdminLeaderboardEntry {
+  id: string;
+  display_name: string;
+  score: number;
+  created_at: string;
+  hidden_at: string | null;
+}
+
 export interface PhotoCreated {
   id: string;
   status: "pending";
@@ -167,6 +204,54 @@ export async function listApprovedPhotos(limit = 20): Promise<ApprovedPhoto[]> {
 
 export function approvedPhotoContentUrl(id: string): string {
   return `/api/v1/photos/approved/${encodeURIComponent(id)}/content`;
+}
+
+export async function createGameSession(): Promise<GameSessionCreated> {
+  const response = await fetch("/api/v1/game/sessions", { method: "POST" });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as GameSessionCreated;
+}
+
+export async function finishGameSession(
+  id: string,
+  input: GameFinishInput,
+): Promise<GameFinishResult> {
+  const response = await fetch(`/api/v1/game/sessions/${encodeURIComponent(id)}/finish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as GameFinishResult;
+}
+
+export async function listLeaderboard(
+  period: "daily" | "all-time" = "daily",
+): Promise<LeaderboardResponse> {
+  const response = await fetch(`/api/v1/game/leaderboard?period=${period}&limit=10`, {
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as LeaderboardResponse;
+}
+
+export async function listAdminLeaderboard(): Promise<AdminLeaderboardEntry[]> {
+  const response = await fetch("/api/v1/admin/leaderboard?limit=100");
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as AdminLeaderboardEntry[];
+}
+
+export async function updateLeaderboardVisibility(
+  id: string,
+  hidden: boolean,
+): Promise<AdminLeaderboardEntry> {
+  const response = await fetch(`/api/v1/admin/leaderboard/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hidden }),
+  });
+  if (!response.ok) throw new Error(await readApiError(response));
+  return (await response.json()) as AdminLeaderboardEntry;
 }
 
 export async function uploadPhoto(photo: Blob, publicConsent: boolean): Promise<PhotoCreated> {

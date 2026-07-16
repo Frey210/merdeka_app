@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from app.config import get_settings
 from app.middleware.rate_limit import enforce_public_rate_limit
 from app.routers.admin import router as admin_router
+from app.routers.game import router as game_router
 from app.routers.guestbook import router as guestbook_router
 from app.routers.health import router as health_router
 from app.routers.photos import download_router
@@ -48,6 +49,7 @@ app = FastAPI(
 app.middleware("http")(enforce_public_rate_limit)
 app.include_router(health_router, prefix="/api/v1")
 app.include_router(guestbook_router, prefix="/api/v1")
+app.include_router(game_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 app.include_router(photos_router, prefix="/api/v1")
 app.include_router(download_router)

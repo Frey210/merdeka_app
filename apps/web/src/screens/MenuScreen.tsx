@@ -24,6 +24,12 @@ const menuItems: { screen: AppScreen; number: string; title: string; description
     title: "Photobooth Merdeka",
     description: "Abadikan momen dengan bingkai HUT RI ke-81.",
   },
+  {
+    screen: "game",
+    number: "04",
+    title: "Dino Merdeka",
+    description: "Berlari membawa Merah Putih dan rebut posisi tertinggi.",
+  },
 ];
 
 export function MenuScreen({ onNavigate }: MenuScreenProps) {
@@ -39,18 +45,18 @@ export function MenuScreen({ onNavigate }: MenuScreenProps) {
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-2">
         {menuItems.map((item, index) => (
           <button
-            className="group flex min-h-[25rem] flex-col rounded-[2.5rem] border-2 border-black/10 bg-white p-8 text-left shadow-[0_1.5rem_4rem_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-2 hover:border-brand-red focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-brand-red active:translate-y-0 lg:p-10"
+            className="group flex min-h-[17rem] flex-col rounded-[2.5rem] border-2 border-black/10 bg-white p-7 text-left shadow-[0_1.5rem_4rem_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-2 hover:border-brand-red focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-brand-red active:translate-y-0 lg:p-8"
             key={item.screen}
             type="button"
             onClick={() => onNavigate(item.screen)}
           >
             <span className="text-2xl font-bold text-brand-red">{item.number}</span>
-            <span className="mt-auto text-4xl font-bold leading-tight lg:text-5xl">{item.title}</span>
-            <span className="mt-5 text-2xl leading-snug text-ink/65">{item.description}</span>
-            <span className="mt-8 text-2xl font-bold text-brand-red" aria-hidden="true">
+            <span className="mt-auto text-4xl font-bold leading-tight lg:text-[2.75rem]">{item.title}</span>
+            <span className="mt-3 text-xl leading-snug text-ink/65 lg:text-2xl">{item.description}</span>
+            <span className="mt-4 text-xl font-bold text-brand-red" aria-hidden="true">
               Buka <span className="inline-block transition-transform group-hover:translate-x-2">→</span>
             </span>
             {index === 0 && <span className="sr-only">Tersedia sekarang</span>}
@@ -61,4 +67,3 @@ export function MenuScreen({ onNavigate }: MenuScreenProps) {
     </section>
   );
 }
-

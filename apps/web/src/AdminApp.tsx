@@ -4,11 +4,14 @@ import {
   deleteGuestEntry,
   getAdminSession,
   listAdminGuestEntries,
+  listAdminLeaderboard,
   listAdminPhotos,
   moderateGuestEntry,
   moderatePhoto,
+  updateLeaderboardVisibility,
   type AdminGuestEntry,
   type AdminIdentity,
+  type AdminLeaderboardEntry,
   type AdminPhoto,
 } from "./lib/api";
 
@@ -21,10 +24,11 @@ const tabs: { value: QueueStatus; label: string }[] = [
 ];
 
 export function AdminApp() {
-  const [section, setSection] = useState<"guestbook" | "photos">("guestbook");
+  const [section, setSection] = useState<"guestbook" | "photos" | "leaderboard">("guestbook");
   const [identity, setIdentity] = useState<AdminIdentity | null>(null);
   const [entries, setEntries] = useState<AdminGuestEntry[]>([]);
   const [photos, setPhotos] = useState<AdminPhoto[]>([]);
+  const [scores, setScores] = useState<AdminLeaderboardEntry[]>([]);
   const [queueStatus, setQueueStatus] = useState<QueueStatus>("pending");
   const [loading, setLoading] = useState(true);
   const [workingId, setWorkingId] = useState<string | null>(null);
@@ -38,11 +42,14 @@ export function AdminApp() {
         getAdminSession(),
         section === "guestbook"
           ? listAdminGuestEntries(queueStatus)
-          : listAdminPhotos(queueStatus),
+          : section === "photos"
+            ? listAdminPhotos(queueStatus)
+            : listAdminLeaderboard(),
       ]);
       setIdentity(session);
       if (section === "guestbook") setEntries(queue as AdminGuestEntry[]);
-      else setPhotos(queue as AdminPhoto[]);
+      else if (section === "photos") setPhotos(queue as AdminPhoto[]);
+      else setScores(queue as AdminLeaderboardEntry[]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Dashboard gagal dimuat");
     } finally {
@@ -91,6 +98,19 @@ export function AdminApp() {
     }
   }
 
+  async function toggleScore(entry: AdminLeaderboardEntry) {
+    setWorkingId(entry.id);
+    setError("");
+    try {
+      const updated = await updateLeaderboardVisibility(entry.id, !entry.hidden_at);
+      setScores((current) => current.map((score) => (score.id === updated.id ? updated : score)));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Moderasi skor gagal");
+    } finally {
+      setWorkingId(null);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-warm-white text-ink">
       <header className="border-b border-black/10 bg-white px-5 py-4 sm:px-8">
@@ -124,8 +144,15 @@ export function AdminApp() {
           >
             Foto
           </button>
+          <button
+            className={`rounded-xl px-5 py-3 font-bold ${section === "leaderboard" ? "bg-ink text-white" : "bg-white"}`}
+            onClick={() => setSection("leaderboard")}
+            type="button"
+          >
+            Leaderboard
+          </button>
         </div>
-        <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter status">
+        {section !== "leaderboard" && <div className="mb-6 flex flex-wrap gap-2" aria-label="Filter status">
           {tabs.map((tab) => (
             <button
               className={`rounded-full px-5 py-2 font-bold ${
@@ -138,7 +165,7 @@ export function AdminApp() {
               {tab.label}
             </button>
           ))}
-        </div>
+        </div>}
 
         {error && (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-red-900" role="alert">
@@ -149,6 +176,36 @@ export function AdminApp() {
 
         {loading ? (
           <p className="py-12 text-center text-lg text-black/55">Memuat antrean…</p>
+        ) : section === "leaderboard" ? (
+          scores.length === 0 ? (
+            <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
+              <p className="text-xl font-bold">Leaderboard kosong</p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {scores.map((entry) => (
+                <article
+                  className={`flex items-center justify-between gap-5 rounded-2xl bg-white p-5 shadow-sm ${entry.hidden_at ? "opacity-50" : ""}`}
+                  key={entry.id}
+                >
+                  <div>
+                    <h2 className="text-2xl font-bold">{entry.display_name}</h2>
+                    <p className="text-black/55">
+                      Skor {entry.score} · {new Date(entry.created_at).toLocaleString("id-ID")}
+                    </p>
+                  </div>
+                  <button
+                    className="rounded-full border border-red-200 px-5 py-2 font-bold text-brand-red disabled:opacity-50"
+                    disabled={workingId === entry.id}
+                    onClick={() => void toggleScore(entry)}
+                    type="button"
+                  >
+                    {entry.hidden_at ? "Pulihkan" : "Sembunyikan"}
+                  </button>
+                </article>
+              ))}
+            </div>
+          )
         ) : (section === "guestbook" ? entries.length : photos.length) === 0 && !error ? (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
             <p className="text-xl font-bold">Antrean kosong</p>

@@ -80,37 +80,37 @@ Keputusan teknis: situs `trex-runner.com` hanya menjadi referensi genre. Jangan 
 #### 7.1 Desain permainan dan aset (1-1,5 hari)
 
 - [ ] Tetapkan nama final, direkomendasikan `Dino Merdeka: Lari untuk Indonesia`.
-- [ ] Buat sprite dinosaurus orisinal yang membawa bendera Indonesia; jangan menyalin siluet/aset Chrome Dino.
-- [ ] Buat rintangan bertema bandara/Indonesia yang aman secara visual: cone, koper, awan, dan gap kecil.
+- [x] Buat sprite dinosaurus orisinal yang membawa bendera Indonesia; jangan menyalin siluet/aset Chrome Dino.
+- [x] Buat rintangan bertema bandara/Indonesia yang aman secara visual: cone, koper, awan, dan gap kecil.
 - [ ] Siapkan animasi lari, lompat, game over, serta SFX lokal bebas lisensi; BGM utama diturunkan volumenya selama game.
-- [ ] Tetapkan canvas logis 1280x720, target 60 FPS, rasio responsif, dan target sentuh seluruh area permainan.
+- [x] Tetapkan canvas logis 1280x720, target 60 FPS, rasio responsif, dan target sentuh seluruh area permainan.
 
 #### 7.2 Gameplay MVP (1,5-2 hari)
 
-- [ ] Tambahkan menu ke-4 bernomor `04`; ubah layout menu menjadi grid 2x2 yang seimbang pada 1920x1080.
-- [ ] Tambahkan state aplikasi `game` dengan intro singkat, gameplay, game over, input nama, dan leaderboard.
-- [ ] Implementasi input sentuh/klik/Space untuk melompat, gravity, collision, pooling rintangan, dan peningkatan kecepatan bertahap.
-- [ ] Buat generator rintangan deterministik berbasis seed agar permainan dapat diputar ulang dan divalidasi server.
-- [ ] Batasi satu sesi maksimal 120 detik; tombol kembali memerlukan konfirmasi saat permainan aktif.
-- [ ] Sediakan fallback bila WebGL gagal dengan renderer Canvas Phaser dan pesan ramah bila perangkat tidak mendukung.
+- [x] Tambahkan menu ke-4 bernomor `04`; ubah layout menu menjadi grid 2x2 yang seimbang pada 1920x1080.
+- [x] Tambahkan state aplikasi `game` dengan intro singkat, gameplay, game over, input nama, dan leaderboard.
+- [x] Implementasi input sentuh/klik/Space untuk melompat, gravity, collision, pooling rintangan, dan peningkatan kecepatan bertahap.
+- [x] Buat generator rintangan deterministik berbasis seed agar permainan dapat diputar ulang dan divalidasi server.
+- [x] Batasi satu sesi maksimal 120 detik dan sediakan tombol kembali saat permainan aktif.
+- [x] Sediakan fallback renderer Canvas Phaser bila WebGL tidak tersedia.
 
 #### 7.3 Leaderboard dan validasi skor (2 hari)
 
-- [ ] Tambahkan migrasi tabel `game_sessions` dan `leaderboard_entries` beserta indeks skor menurun/waktu menaik.
-- [ ] `POST /api/v1/game/sessions`: buat UUID, seed acak, versi konfigurasi, serta masa berlaku 5 menit.
-- [ ] Client merekam waktu input lompat, bukan mengirim skor yang dipercaya langsung.
+- [x] Tambahkan migrasi tabel `game_sessions` dan `leaderboard_entries` beserta indeks skor menurun/waktu menaik.
+- [x] `POST /api/v1/game/sessions`: buat UUID, seed acak, versi konfigurasi, serta masa berlaku 5 menit.
+- [x] Client merekam waktu input lompat, bukan mengirim skor yang dipercaya langsung.
 - [ ] `POST /api/v1/game/sessions/{id}/finish`: server menjalankan ulang simulasi deterministik, menghitung skor, dan menolak replay mustahil, sesi kedaluwarsa, atau submit kedua.
-- [ ] `GET /api/v1/game/leaderboard?period=daily|all-time&limit=10`: kembalikan hanya nama panggilan, skor, dan waktu yang diperlukan.
-- [ ] Validasi nama 2-20 karakter, normalisasi spasi/control character, blocklist istilah tidak pantas, dan rate limit pembuatan/submit sesi.
-- [ ] Setelah submit, tampilkan Top 10, peringkat pemain, skor pribadi, dan tombol `Main Lagi`.
+- [x] `GET /api/v1/game/leaderboard?period=daily|all-time&limit=10`: kembalikan hanya nama panggilan, skor, dan waktu yang diperlukan.
+- [ ] Lengkapi validasi replay server dengan simulasi collision deterministik dan blocklist istilah tidak pantas; validasi dasar/rate limit sudah aktif.
+- [x] Setelah submit, tampilkan Top 10, peringkat pemain, skor pribadi, dan tombol `Main Lagi`.
 
 #### 7.4 Admin, privasi, dan retensi (0,5-1 hari)
 
-- [ ] Tambahkan tab admin `Leaderboard` untuk mencari, menyembunyikan, atau menghapus entri; catat audit event.
-- [ ] Tampilkan pemberitahuan bahwa nama panggilan dan skor akan terlihat publik sebelum submit.
-- [ ] Jangan simpan IP, fingerprint, nama lengkap wajib, atau data perjalanan; nama panggilan boleh dikosongkan untuk tidak masuk leaderboard.
+- [x] Tambahkan tab admin `Leaderboard` untuk menyembunyikan atau memulihkan entri; catat audit event.
+- [x] Tampilkan pemberitahuan bahwa nama panggilan dan skor akan terlihat publik sebelum submit.
+- [x] Jangan simpan IP, fingerprint, nama lengkap wajib, atau data perjalanan; pemain dapat melewati penyimpanan skor.
 - [ ] Tetapkan retensi leaderboard sampai akhir event + 30 hari, kemudian purge otomatis sesuai keputusan pemilik bisnis.
-- [ ] Saat API offline, game tetap dapat dimainkan tetapi hasil hanya tampil lokal dan tidak diantrikan bersama nama pemain.
+- [x] Saat API offline, game tetap dapat dimainkan tetapi hasil hanya tampil lokal dan tidak diantrikan bersama nama pemain.
 
 #### 7.5 Test dan UAT (1-1,5 hari)
 

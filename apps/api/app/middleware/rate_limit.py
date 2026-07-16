@@ -12,6 +12,7 @@ PUBLIC_POST_LIMITS = {
     # API runs two workers; per-worker limits keep aggregate near 10/6 per minute.
     "/api/v1/guestbook": 5,
     "/api/v1/photos": 3,
+    "/api/v1/game/sessions": 10,
 }
 
 
@@ -43,6 +44,8 @@ async def enforce_public_rate_limit(
     call_next: RequestResponseEndpoint,
 ) -> Response:
     limit = PUBLIC_POST_LIMITS.get(request.url.path) if request.method == "POST" else None
+    if request.method == "POST" and request.url.path.startswith("/api/v1/game/sessions/"):
+        limit = 10
     if limit is None:
         return await call_next(request)
 

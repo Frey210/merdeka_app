@@ -10,8 +10,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import AuditEvent, GuestEntry, ModerationStatus, Photo
-from app.schemas import AdminGuestEntry, AdminIdentity, AdminPhoto, ModerationUpdate
+from app.models import AuditEvent, GuestEntry, LeaderboardEntry, ModerationStatus, Photo
+from app.schemas import (
+    AdminGuestEntry,
+    AdminIdentity,
+    AdminLeaderboardEntry,
+    AdminPhoto,
+    LeaderboardVisibilityUpdate,
+    ModerationUpdate,
+)
 from app.security.cloudflare_access import require_admin
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -191,3 +198,42 @@ def delete_photo(
     with suppress(OSError):
         Path(storage_path).unlink(missing_ok=True)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/leaderboard", response_model=list[AdminLeaderboardEntry])
+def list_leaderboard_entries(
+    admin: CurrentAdmin,
+    db: DatabaseSession,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+) -> list[LeaderboardEntry]:
+    del admin
+    statement = (
+        select(LeaderboardEntry)
+        .order_by(LeaderboardEntry.created_at.desc())
+        .limit(limit)
+    )
+    return list(db.scalars(statement))
+
+
+@router.patch("/leaderboard/{entry_id}", response_model=AdminLeaderboardEntry)
+def update_leaderboard_visibility(
+    entry_id: uuid.UUID,
+    payload: LeaderboardVisibilityUpdate,
+    admin: CurrentAdmin,
+    db: DatabaseSession,
+) -> LeaderboardEntry:
+    entry = db.get(LeaderboardEntry, entry_id)
+    if entry is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Skor tidak ditemukan")
+    entry.hidden_at = datetime.now(UTC) if payload.hidden else None
+    db.add(
+        AuditEvent(
+            actor=admin.email,
+            action="hidden" if payload.hidden else "restored",
+            entity_type="leaderboard_entry",
+            entity_id=entry.id,
+        )
+    )
+    db.commit()
+    db.refresh(entry)
+    return entry

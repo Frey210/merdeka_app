@@ -6,6 +6,7 @@ import {
 import { BrandHeader } from "./components/BrandHeader";
 import { useIdleTimeout } from "./hooks/useIdleTimeout";
 import { GuestBookScreen } from "./screens/GuestBookScreen";
+import { GameScreen } from "./screens/GameScreen";
 import { IdleScreen } from "./screens/IdleScreen";
 import { MenuScreen } from "./screens/MenuScreen";
 import { PhotoBoothScreen } from "./screens/PhotoBoothScreen";
@@ -17,6 +18,7 @@ export type AppScreen =
   | "timeline"
   | "guestbook"
   | "camera"
+  | "game"
   | "preview"
   | "download";
 
@@ -43,6 +45,8 @@ export function App() {
       <BackgroundMusic ref={musicRef} />
       {screen === "idle" ? (
         <IdleScreen onStart={startExperience} />
+      ) : screen === "game" ? (
+        <GameScreen onBack={() => setScreen("menu")} />
       ) : (
         <main className="min-h-screen bg-warm-white text-ink">
           <div className="mx-auto flex min-h-screen max-w-[1920px] flex-col px-8 py-6 lg:px-16 lg:py-8">

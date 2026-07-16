@@ -22,6 +22,17 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: /sumpah pemuda/i })).toBeInTheDocument();
   });
 
+  it("membuka mini game sebagai fitur keempat", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
+    fireEvent.click(screen.getByRole("button", { name: /dino merdeka/i }));
+
+    expect(screen.getByRole("heading", { name: "Dino Merdeka" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /mulai berlari/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pelari terbaik/i })).toBeInTheDocument();
+  });
+
   it("kembali ke idle setelah 90 detik tanpa aktivitas", () => {
     vi.useFakeTimers();
     render(<App />);
