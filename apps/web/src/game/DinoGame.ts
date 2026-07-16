@@ -12,6 +12,11 @@ interface DinoGameOptions {
   onGameOver: (result: DinoGameResult) => void;
 }
 
+export function getGameDurationMs(now: number, startedAt: number | null): number | null {
+  if (startedAt === null) return null;
+  return Math.max(0, Math.round(now - startedAt));
+}
+
 function createSeededRandom(seed: number) {
   let value = seed >>> 0;
   return () => {
@@ -31,34 +36,40 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
   let obstacles: PhaserType.Physics.Arcade.Group;
   let scoreText: PhaserType.GameObjects.Text;
   let gameOverText: PhaserType.GameObjects.Text;
-  let startedAt = 0;
+  let startedAt: number | null = null;
   let nextObstacleAt = 0;
   let ended = false;
   let currentSpeed = 480;
   const jumpTimesMs: number[] = [];
 
   function createTextures(scene: PhaserType.Scene) {
-    const dinoGraphic = scene.make.graphics({ x: 0, y: 0 });
-    dinoGraphic.fillStyle(0x101010);
-    dinoGraphic.fillRect(28, 34, 46, 42);
-    dinoGraphic.fillRect(57, 15, 42, 38);
-    dinoGraphic.fillRect(88, 25, 14, 7);
-    dinoGraphic.fillRect(14, 48, 25, 17);
-    dinoGraphic.fillTriangle(4, 48, 30, 42, 30, 62);
-    dinoGraphic.fillRect(34, 72, 12, 22);
-    dinoGraphic.fillRect(62, 72, 12, 22);
-    dinoGraphic.fillStyle(0xffffff);
-    dinoGraphic.fillCircle(84, 27, 4);
-    dinoGraphic.fillStyle(0x101010);
-    dinoGraphic.fillCircle(85, 27, 2);
-    dinoGraphic.fillStyle(0x5d4037);
-    dinoGraphic.fillRect(48, 3, 4, 45);
-    dinoGraphic.fillStyle(0xed1c24);
-    dinoGraphic.fillTriangle(52, 4, 89, 13, 52, 22);
-    dinoGraphic.fillStyle(0xffffff);
-    dinoGraphic.fillTriangle(52, 13, 89, 13, 52, 22);
-    dinoGraphic.generateTexture("dino-merdeka", 108, 98);
-    dinoGraphic.destroy();
+    const createDinoFrame = (texture: string, stride: boolean) => {
+      const dinoGraphic = scene.make.graphics({ x: 0, y: 0 });
+      dinoGraphic.fillStyle(0x101010);
+      dinoGraphic.fillRect(28, 34, 46, 42);
+      dinoGraphic.fillRect(57, 15, 42, 38);
+      dinoGraphic.fillRect(88, 25, 14, 7);
+      dinoGraphic.fillRect(14, 48, 25, 17);
+      dinoGraphic.fillTriangle(4, 48, 30, 42, 30, 62);
+      dinoGraphic.fillRect(stride ? 28 : 38, 72, 12, stride ? 18 : 22);
+      dinoGraphic.fillRect(stride ? 68 : 58, 72, 12, stride ? 22 : 18);
+      dinoGraphic.fillRect(stride ? 22 : 38, stride ? 86 : 90, 23, 8);
+      dinoGraphic.fillRect(stride ? 68 : 53, stride ? 90 : 86, 23, 8);
+      dinoGraphic.fillStyle(0xffffff);
+      dinoGraphic.fillCircle(84, 27, 4);
+      dinoGraphic.fillStyle(0x101010);
+      dinoGraphic.fillCircle(85, 27, 2);
+      dinoGraphic.fillStyle(0x5d4037);
+      dinoGraphic.fillRect(48, 3, 4, 45);
+      dinoGraphic.fillStyle(0xed1c24);
+      dinoGraphic.fillTriangle(52, 4, 89, 13, 52, 22);
+      dinoGraphic.fillStyle(0xffffff);
+      dinoGraphic.fillTriangle(52, 13, 89, 13, 52, 22);
+      dinoGraphic.generateTexture(texture, 108, 98);
+      dinoGraphic.destroy();
+    };
+    createDinoFrame("dino-merdeka-run-1", false);
+    createDinoFrame("dino-merdeka-run-2", true);
 
     const cone = scene.make.graphics({ x: 0, y: 0 });
     cone.fillStyle(0xed1c24);
@@ -117,10 +128,17 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
       this.physics.add.existing(ground, true);
       this.add.rectangle(640, 651, 1280, 8, 0xed1c24);
 
-      dino = this.physics.add.sprite(175, 566, "dino-merdeka");
+      dino = this.physics.add.sprite(175, 566, "dino-merdeka-run-1");
       dino.setCollideWorldBounds(true);
       (dino.body as PhaserType.Physics.Arcade.Body).setSize(78, 82).setOffset(15, 12);
       this.physics.add.collider(dino, ground);
+      this.anims.create({
+        key: "dino-running",
+        frames: [{ key: "dino-merdeka-run-1" }, { key: "dino-merdeka-run-2" }],
+        frameRate: 9,
+        repeat: -1,
+      });
+      dino.play("dino-running");
 
       obstacles = this.physics.add.group({ allowGravity: false, immovable: true });
       this.physics.add.collider(dino, obstacles, () => this.finishGame());
@@ -161,7 +179,7 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
         const body = dino.body as PhaserType.Physics.Arcade.Body;
         if (body.blocked.down || body.touching.down) {
           dino.setVelocityY(-720);
-          jumpTimesMs.push(Math.max(0, Math.round(this.time.now - startedAt)));
+          jumpTimesMs.push(getGameDurationMs(this.time.now, startedAt) ?? 0);
           this.tweens.add({ targets: dino, angle: -7, duration: 130, yoyo: true });
         }
       };
@@ -186,9 +204,10 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
     finishGame() {
       if (ended) return;
       ended = true;
-      const durationMs = Math.min(120_000, Math.max(0, Math.round(this.time.now - startedAt)));
+      const durationMs = Math.min(120_000, getGameDurationMs(this.time.now, startedAt) ?? 0);
       const score = Math.floor(durationMs / 100);
       dino.setTint(0xed1c24);
+      dino.stop();
       dino.setVelocity(0, 0);
       obstacles.getChildren().forEach((child) => (child as PhaserType.Physics.Arcade.Sprite).setVelocityX(0));
       gameOverText.setText(`PERJALANAN SELESAI\nSKOR ${score.toString().padStart(4, "0")}`).setVisible(true);
@@ -196,8 +215,9 @@ export async function mountDinoGame({ parent, seed, onGameOver }: DinoGameOption
     }
 
     update(time: number) {
-      if (ended || !startedAt) return;
-      const durationMs = time - startedAt;
+      if (ended) return;
+      const durationMs = getGameDurationMs(time, startedAt);
+      if (durationMs === null) return;
       currentSpeed = Math.min(860, 480 + durationMs / 160);
       scoreText.setText(Math.floor(durationMs / 100).toString().padStart(4, "0"));
 
