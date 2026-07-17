@@ -12,7 +12,7 @@ type Stage = "intro" | "camera" | "preview" | "download";
 export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
   const [stage, setStage] = useState<Stage>("intro");
   const [theme, setTheme] = useState<FrameTheme>("merah-putih");
-  const [publicConsent, setPublicConsent] = useState(false);
+  const [publicConsent, setPublicConsent] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [snapshot, setSnapshot] = useState<Blob | null>(null);
   const [snapshotUrl, setSnapshotUrl] = useState("");
@@ -194,7 +194,7 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
             <span>
               Saya bersedia foto langsung ditampilkan di layar publik.
               <small className="mt-1 block text-lg text-black/55">
-                Tidak wajib. Tanpa izin publik, foto tetap dapat diunduh melalui QR oleh pengunjung.
+                Hilangkan centang jika foto ingin tetap privat. QR unduh tetap tersedia.
               </small>
             </span>
           </label>

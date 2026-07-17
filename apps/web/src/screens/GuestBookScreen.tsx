@@ -17,7 +17,7 @@ const initialForm: FormState = {
   displayName: "",
   origin: "",
   message: "",
-  consentPublic: false,
+  consentPublic: true,
 };
 
 type TextFieldName = "displayName" | "origin" | "message";
@@ -147,7 +147,10 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
             checked={form.consentPublic}
             onChange={(event) => setForm({ ...form, consentPublic: event.target.checked })}
           />
-          <span>Saya bersedia nama, asal, dan harapan ini langsung ditampilkan di layar publik setelah melewati filter bahasa otomatis.</span>
+          <span>
+            Saya bersedia nama, asal, dan harapan ini langsung ditampilkan di layar publik setelah melewati filter bahasa otomatis.
+            <small className="mt-1 block text-lg text-black/55">Hilangkan centang jika harapan ingin disimpan secara privat.</small>
+          </span>
         </label>
 
         {error && (
