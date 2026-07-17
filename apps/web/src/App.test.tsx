@@ -64,6 +64,10 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
     fireEvent.click(screen.getByRole("button", { name: /harapan untuk bangsa/i }));
+    const publicConsent = screen.getByRole("checkbox");
+    expect(publicConsent).toBeChecked();
+    fireEvent.click(publicConsent);
+    expect(publicConsent).not.toBeChecked();
     fireEvent.change(screen.getByLabelText(/^nama$/i), { target: { value: "Andi" } });
     fireEvent.change(screen.getByLabelText(/asal daerah/i), { target: { value: "Makassar" } });
     fireEvent.change(screen.getByLabelText(/harapan untuk indonesia/i), {
@@ -76,6 +80,8 @@ describe("App", () => {
       "/api/v1/guestbook",
       expect.objectContaining({ method: "POST" }),
     );
+    const submitOptions = fetchMock.mock.calls.find(([input]) => String(input) === "/api/v1/guestbook")?.[1];
+    expect(JSON.parse(String(submitOptions?.body))).toMatchObject({ consent_public: false });
     fetchMock.mockRestore();
   });
 
@@ -103,7 +109,7 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: /siap berfoto/i })).toBeInTheDocument();
     expect(screen.getByText(/foto disimpan privat maksimal 7 hari/i)).toBeInTheDocument();
-    expect(screen.getByRole("checkbox")).not.toBeChecked();
+    expect(screen.getByRole("checkbox")).toBeChecked();
   });
 
   it("memasang stream setelah elemen video selesai dirender", async () => {
