@@ -8,6 +8,7 @@ deployment
 
 # Source design package is too large for regular GitHub storage.
 Asset_Design_guideline/
+aset game dino/
 
 # Frontend
 node_modules/
