@@ -6,7 +6,7 @@ BGM memakai playlist lokal `Hari Merdeka`, `Tanah Air`, dan `Bagimu Negeri`. Bro
 
 Layar idle menampilkan carousel harapan dan foto pengunjung yang telah disetujui serta memiliki persetujuan publik. Data diperbarui setiap 30 detik dan berganti setiap 8 detik; saat kosong atau offline, identitas visual `81` tetap tampil. Izin publik tidak memengaruhi QR unduh: foto privat tetap dapat diunduh oleh pengunjung selama token QR dan masa retensinya berlaku.
 
-Fitur keempat `Dino Merdeka` adalah mini game endless runner orisinal berbasis Phaser 3. Setelah aset termuat, Dino menunggu dalam keadaan idle sampai tap pertama memicu countdown `Bersedia - Siap - Mulai`; counter dan gameplay baru aktif setelah countdown. Game memakai input sentuh layar penuh, dapat dimainkan offline, dan menyimpan nama panggilan serta skor terverifikasi ke leaderboard harian/all-time melalui FastAPI.
+Fitur keempat `Dino Merdeka` adalah mini game endless runner orisinal berbasis Phaser 3. Setelah aset termuat, Dino menunggu dalam keadaan idle sampai tap pertama memicu countdown `Bersedia - Siap - Mulai`; counter dan gameplay baru aktif setelah countdown. Arena memakai parallax bandara dan runway, dengan rintangan darat untuk dilompati serta pesawat rendah yang harus dilewati tanpa melompat. Game dapat dimainkan offline dan menyimpan skor terverifikasi ke leaderboard all-time yang dapat digulir melalui FastAPI.
 
 Input teks publik memakai keyboard layar `react-simple-keyboard` bertema merah-putih. Keyboard tampil sebagai drawer floating pada formulir Harapan untuk Indonesia dan input nama Dino Merdeka sehingga layout kiosk tetap utuh dan keyboard fisik tidak diperlukan.
 

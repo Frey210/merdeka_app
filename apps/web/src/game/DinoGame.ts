@@ -27,6 +27,13 @@ export function advanceGameDurationMs(currentDurationMs: number, deltaMs: number
   return Math.min(120_000, Math.max(0, currentDurationMs + Math.max(0, deltaMs)));
 }
 
+export type ObstacleTexture = "obstacle-cone" | "obstacle-suitcase" | "obstacle-plane";
+
+export function selectObstacleTexture(durationMs: number, roll: number): ObstacleTexture {
+  if (durationMs >= 6_000 && roll < 0.24) return "obstacle-plane";
+  return roll > 0.58 ? "obstacle-cone" : "obstacle-suitcase";
+}
+
 function createSeededRandom(seed: number) {
   let value = seed >>> 0;
   return () => {
@@ -48,7 +55,12 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
   let gameOverText: PhaserType.GameObjects.Text;
   let readyText: PhaserType.GameObjects.Text;
   let countdownText: PhaserType.GameObjects.Text;
+  let countdownStepText: PhaserType.GameObjects.Text;
+  let startOverlay: PhaserType.GameObjects.Rectangle;
   let instructionText: PhaserType.GameObjects.Text;
+  let cloudLayer: PhaserType.GameObjects.TileSprite;
+  let skylineLayer: PhaserType.GameObjects.TileSprite;
+  let runwayLayer: PhaserType.GameObjects.TileSprite;
   let phase: GamePhase = "waiting";
   let countdownElapsedMs = 0;
   let startRunning = () => undefined;
@@ -108,6 +120,63 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
     suitcase.fillCircle(73, 88, 6);
     suitcase.generateTexture("obstacle-suitcase", 94, 96);
     suitcase.destroy();
+
+    const plane = scene.make.graphics({ x: 0, y: 0 });
+    plane.lineStyle(4, 0x101010, 0.75);
+    plane.fillStyle(0xffffff);
+    plane.fillRoundedRect(25, 25, 125, 28, 14);
+    plane.strokeRoundedRect(25, 25, 125, 28, 14);
+    plane.fillTriangle(145, 25, 185, 39, 145, 53);
+    plane.strokeTriangle(145, 25, 185, 39, 145, 53);
+    plane.fillTriangle(35, 29, 9, 7, 50, 29);
+    plane.fillTriangle(36, 50, 8, 69, 62, 50);
+    plane.fillTriangle(88, 31, 58, 4, 120, 31);
+    plane.fillTriangle(88, 48, 60, 72, 126, 48);
+    plane.fillStyle(0xed1c24);
+    plane.fillRect(126, 27, 20, 24);
+    plane.fillTriangle(15, 8, 32, 25, 43, 25);
+    plane.fillStyle(0x101010);
+    [57, 75, 93, 111].forEach((x) => plane.fillCircle(x, 37, 3));
+    plane.generateTexture("obstacle-plane", 190, 76);
+    plane.destroy();
+
+    const clouds = scene.make.graphics({ x: 0, y: 0 });
+    clouds.fillStyle(0xffffff, 0.95);
+    clouds.fillCircle(78, 80, 30);
+    clouds.fillCircle(112, 67, 42);
+    clouds.fillCircle(155, 83, 28);
+    clouds.fillRoundedRect(54, 80, 126, 34, 17);
+    clouds.fillCircle(390, 48, 22);
+    clouds.fillCircle(418, 38, 31);
+    clouds.fillCircle(452, 52, 24);
+    clouds.fillRoundedRect(370, 49, 105, 27, 14);
+    clouds.generateTexture("parallax-clouds", 512, 128);
+    clouds.destroy();
+
+    const skyline = scene.make.graphics({ x: 0, y: 0 });
+    skyline.fillStyle(0x101010, 0.12);
+    skyline.fillRect(0, 88, 640, 32);
+    skyline.fillRect(24, 55, 170, 35);
+    skyline.fillTriangle(24, 55, 109, 22, 194, 55);
+    skyline.fillRect(210, 66, 170, 24);
+    skyline.fillRect(395, 48, 105, 42);
+    skyline.fillRect(440, 15, 14, 37);
+    skyline.fillRect(425, 9, 44, 13);
+    skyline.fillTriangle(425, 9, 447, 0, 469, 9);
+    skyline.fillStyle(0xed1c24, 0.16);
+    for (let x = 224; x <= 364; x += 28) skyline.fillRect(x, 72, 15, 8);
+    skyline.generateTexture("parallax-airport", 512, 128);
+    skyline.destroy();
+
+    const runway = scene.make.graphics({ x: 0, y: 0 });
+    runway.fillStyle(0x101010);
+    runway.fillRect(0, 0, 320, 34);
+    runway.fillStyle(0xffffff, 0.9);
+    runway.fillRoundedRect(18, 13, 78, 8, 4);
+    runway.fillRoundedRect(178, 13, 78, 8, 4);
+    runway.fillRoundedRect(338, 13, 78, 8, 4);
+    runway.generateTexture("moving-runway", 512, 64);
+    runway.destroy();
   }
 
   const scene: PhaserType.Types.Scenes.SettingsConfig = {
@@ -126,6 +195,8 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
       this.add.circle(1160, 80, 210, 0xed1c24, 0.08);
       this.add.circle(1160, 80, 125).setStrokeStyle(30, 0xed1c24, 0.1);
       this.add.circle(80, 690, 230).setStrokeStyle(45, 0x101010, 0.06);
+      cloudLayer = this.add.tileSprite(640, 205, 1280, 150, "parallax-clouds").setAlpha(0.78);
+      skylineLayer = this.add.tileSprite(640, 555, 1280, 120, "parallax-airport");
       this.add.text(60, 45, "DINO MERDEKA", {
         color: "#ed1c24",
         fontFamily: "Saira Semi Condensed",
@@ -139,8 +210,9 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
         fontSize: "26px",
       });
 
-      const ground = this.add.rectangle(640, 630, 1280, 34, 0x101010);
+      const ground = this.add.rectangle(640, 630, 1280, 34, 0x101010, 0);
       this.physics.add.existing(ground, true);
+      runwayLayer = this.add.tileSprite(640, 630, 1280, 34, "moving-runway");
       this.add.rectangle(640, 651, 1280, 8, 0xed1c24);
 
       dino = this.physics.add.sprite(175, 566, "dino-merdeka-run-1");
@@ -176,32 +248,48 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
         })
         .setOrigin(0.5);
 
+      startOverlay = this.add.rectangle(640, 360, 1280, 720, 0x101010, 0.26).setDepth(28);
+
       readyText = this.add
-        .text(640, 300, "LINTASAN SIAP\nSentuh layar untuk bersiap", {
+        .text(640, 300, "LINTASAN SIAP\nSENTUH LAYAR UNTUK BERSIAP", {
           align: "center",
-          backgroundColor: "#ffffff",
-          color: "#101010",
+          color: "#ffffff",
           fontFamily: "Saira Semi Condensed",
-          fontSize: "42px",
+          fontSize: "46px",
           fontStyle: "bold",
+          letterSpacing: 3,
           lineSpacing: 12,
-          padding: { x: 48, y: 30 },
+          stroke: "#101010",
+          strokeThickness: 3,
         })
         .setOrigin(0.5)
-        .setDepth(10);
+        .setDepth(30);
 
       countdownText = this.add
         .text(640, 300, "", {
           align: "center",
-          backgroundColor: "#ffffff",
-          color: "#ed1c24",
+          color: "#ffffff",
           fontFamily: "Saira Semi Condensed",
-          fontSize: "76px",
+          fontSize: "92px",
           fontStyle: "bold",
-          padding: { x: 64, y: 30 },
+          letterSpacing: 8,
+          stroke: "#101010",
+          strokeThickness: 5,
         })
         .setOrigin(0.5)
-        .setDepth(12)
+        .setDepth(31)
+        .setVisible(false);
+
+      countdownStepText = this.add
+        .text(640, 395, "01 / 03", {
+          color: "#ed1c24",
+          fontFamily: "Saira Semi Condensed",
+          fontSize: "28px",
+          fontStyle: "bold",
+          letterSpacing: 7,
+        })
+        .setOrigin(0.5)
+        .setDepth(31)
         .setVisible(false);
 
       gameOverText = this.add
@@ -222,7 +310,9 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
         phase = "running";
         elapsedMs = 0;
         nextObstacleAt = 1_400;
+        startOverlay.setVisible(false);
         countdownText.setVisible(false);
+        countdownStepText.setVisible(false);
         instructionText.setText("SENTUH LAYAR UNTUK MELOMPAT");
         dino.play("dino-running");
       };
@@ -232,7 +322,9 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
           phase = "countdown";
           countdownElapsedMs = 0;
           readyText.setVisible(false);
+          startOverlay.setAlpha(0.62);
           countdownText.setText(START_COUNTDOWN_CUES[0]).setVisible(true);
+          countdownStepText.setText("01 / 03").setVisible(true);
           instructionText.setText("PERMAINAN AKAN DIMULAI");
           return;
         }
@@ -256,13 +348,22 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
     }
 
     spawnObstacle() {
-      const texture = random() > 0.48 ? "obstacle-cone" : "obstacle-suitcase";
-      const obstacle = obstacles.create(1340, texture === "obstacle-cone" ? 574 : 566, texture) as PhaserType.Physics.Arcade.Sprite;
-      obstacle.setVelocityX(-currentSpeed);
-      (obstacle.body as PhaserType.Physics.Arcade.Body).setSize(
-        texture === "obstacle-cone" ? 42 : 76,
-        texture === "obstacle-cone" ? 65 : 78,
-      );
+      const roll = random();
+      const texture = selectObstacleTexture(elapsedMs, roll);
+      const y = texture === "obstacle-plane" ? 474 : texture === "obstacle-cone" ? 574 : 566;
+      const obstacle = obstacles.create(1380, y, texture) as PhaserType.Physics.Arcade.Sprite;
+      const speedFactor = texture === "obstacle-plane" ? 1.12 : 1;
+      obstacle.setData("speedFactor", speedFactor);
+      obstacle.setVelocityX(-currentSpeed * speedFactor);
+      const body = obstacle.body as PhaserType.Physics.Arcade.Body;
+      if (texture === "obstacle-plane") {
+        body.setSize(158, 42).setOffset(15, 13);
+      } else {
+        body.setSize(
+          texture === "obstacle-cone" ? 42 : 76,
+          texture === "obstacle-cone" ? 65 : 78,
+        );
+      }
     }
 
     finishGame() {
@@ -283,7 +384,11 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
         countdownElapsedMs += Math.max(0, delta);
         const cue = getStartCountdownCue(countdownElapsedMs);
         if (cue) {
-          if (countdownText.text !== cue) countdownText.setText(cue);
+          if (countdownText.text !== cue) {
+            countdownText.setText(cue);
+            const step = Math.floor(countdownElapsedMs / START_COUNTDOWN_STEP_MS) + 1;
+            countdownStepText.setText(`${String(step).padStart(2, "0")} / 03`);
+          }
         } else {
           startRunning();
         }
@@ -294,6 +399,10 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
       const durationMs = elapsedMs;
       currentSpeed = Math.min(860, 480 + durationMs / 160);
       scoreText.setText(Math.floor(durationMs / 100).toString().padStart(4, "0"));
+      const seconds = Math.max(0, delta) / 1_000;
+      cloudLayer.tilePositionX += currentSpeed * 0.035 * seconds;
+      skylineLayer.tilePositionX += currentSpeed * 0.12 * seconds;
+      runwayLayer.tilePositionX += currentSpeed * seconds;
 
       if (durationMs >= nextObstacleAt) {
         this.spawnObstacle();
@@ -302,8 +411,8 @@ export async function mountDinoGame({ parent, seed, onReady, onGameOver }: DinoG
       }
       obstacles.getChildren().forEach((child) => {
         const obstacle = child as PhaserType.Physics.Arcade.Sprite;
-        obstacle.setVelocityX(-currentSpeed);
-        if (obstacle.x < -100) obstacle.destroy();
+        obstacle.setVelocityX(-currentSpeed * (obstacle.getData("speedFactor") as number || 1));
+        if (obstacle.x < -220) obstacle.destroy();
       });
 
       if (durationMs >= 120_000) this.finishGame();

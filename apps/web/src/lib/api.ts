@@ -226,9 +226,10 @@ export async function finishGameSession(
 }
 
 export async function listLeaderboard(
-  period: "daily" | "all-time" = "daily",
+  period: "daily" | "all-time" = "all-time",
+  limit = 200,
 ): Promise<LeaderboardResponse> {
-  const response = await fetch(`/api/v1/game/leaderboard?period=${period}&limit=10`, {
+  const response = await fetch(`/api/v1/game/leaderboard?period=${period}&limit=${limit}`, {
     cache: "no-store",
   });
   if (!response.ok) throw new Error(await readApiError(response));

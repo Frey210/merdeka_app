@@ -30,7 +30,6 @@ export function GameScreen({ onBack }: GameScreenProps) {
   const [rank, setRank] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([]);
-  const [period, setPeriod] = useState<"daily" | "all-time">("daily");
   const [error, setError] = useState("");
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -41,9 +40,9 @@ export function GameScreen({ onBack }: GameScreenProps) {
   const startingRef = useRef(false);
   const gameDestroyRef = useRef<(() => void) | null>(null);
 
-  const loadLeaderboard = useCallback(async (selectedPeriod: "daily" | "all-time") => {
+  const loadLeaderboard = useCallback(async () => {
     try {
-      const response = await listLeaderboard(selectedPeriod);
+      const response = await listLeaderboard("all-time", 200);
       setLeaderboard(response.items);
     } catch {
       setLeaderboard([]);
@@ -51,8 +50,8 @@ export function GameScreen({ onBack }: GameScreenProps) {
   }, []);
 
   useEffect(() => {
-    void loadLeaderboard(period);
-  }, [loadLeaderboard, period]);
+    void loadLeaderboard();
+  }, [loadLeaderboard]);
 
   useEffect(() => {
     if (stage !== "playing" || !session || !gameContainerRef.current) return;
@@ -150,7 +149,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
       });
       setVerifiedScore(submitted.score);
       setRank(submitted.rank);
-      await loadLeaderboard(period);
+      await loadLeaderboard();
       setStage("leaderboard");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Skor belum dapat dikirim.");
@@ -218,14 +217,14 @@ export function GameScreen({ onBack }: GameScreenProps) {
             {stage === "intro" && (
               <>
                 <p className="max-w-3xl text-3xl leading-snug lg:text-4xl">
-                  Bantu Dino membawa Merah Putih melintasi rintangan. Sentuh layar untuk melompat dan raih skor tertinggi!
+                  Bantu Dino membawa Merah Putih melintasi bandara. Lompati rintangan darat, tetapi tetap berlari di bawah saat pesawat melintas!
                 </p>
                 <div className="mt-9 flex flex-wrap gap-4">
                   <button className="min-h-24 rounded-full bg-white px-14 py-5 text-4xl font-bold text-brand-red shadow-2xl" type="button" onClick={() => void startGame()}>
                     Mulai Berlari
                   </button>
                 </div>
-                <p className="mt-6 text-2xl text-white/75">Kontrol: sentuh layar, klik, atau tekan Space.</p>
+                <p className="mt-6 text-2xl text-white/75">Kontrol: sentuh layar, klik, atau tekan Space untuk melompat.</p>
               </>
             )}
 
@@ -275,15 +274,9 @@ export function GameScreen({ onBack }: GameScreenProps) {
                 <p className="text-lg font-bold uppercase tracking-[0.18em] text-brand-red">Papan Peringkat</p>
                 <h2 className="text-4xl font-bold">Pelari Terbaik</h2>
               </div>
-              <button
-                className="rounded-full bg-warm-white px-5 py-3 text-lg font-bold"
-                type="button"
-                onClick={() => setPeriod((current) => (current === "daily" ? "all-time" : "daily"))}
-              >
-                {period === "daily" ? "Hari Ini" : "Semua"}
-              </button>
+              <span className="rounded-full bg-warm-white px-5 py-3 text-lg font-bold text-black/60">Sepanjang Waktu</span>
             </div>
-            <ol className="mt-6 space-y-2">
+            <ol className="kiosk-scrollbar mt-6 max-h-[min(52vh,38rem)] space-y-2 overflow-y-auto pr-3" aria-label="Leaderboard seluruh pemain">
               {leaderboard.length ? leaderboard.map((entry) => (
                 <li className="grid grid-cols-[3rem_1fr_auto] items-center gap-3 rounded-2xl bg-warm-white px-5 py-3 text-2xl" key={`${entry.rank}-${entry.display_name}-${entry.score}`}>
                   <strong className="text-brand-red">{entry.rank}</strong>
@@ -291,7 +284,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
                   <span className="font-bold tabular-nums">{entry.score.toString().padStart(4, "0")}</span>
                 </li>
               )) : (
-                <li className="rounded-2xl bg-warm-white p-6 text-center text-xl text-black/55">Jadilah pelari pertama hari ini!</li>
+                <li className="rounded-2xl bg-warm-white p-6 text-center text-xl text-black/55">Jadilah pelari pertama!</li>
               )}
             </ol>
           </div>

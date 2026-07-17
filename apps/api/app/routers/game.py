@@ -107,7 +107,7 @@ def finish_game_session(
 def list_leaderboard(
     db: DatabaseSession,
     period: Annotated[Literal["daily", "all-time"], Query()] = "daily",
-    limit: Annotated[int, Query(ge=1, le=20)] = 10,
+    limit: Annotated[int, Query(ge=1, le=200)] = 10,
 ) -> LeaderboardResponse:
     statement = select(LeaderboardEntry).where(LeaderboardEntry.hidden_at.is_(None))
     if period == "daily":

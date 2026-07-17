@@ -148,6 +148,27 @@ button {
   font-weight: 400;
 }
 
+.kiosk-scrollbar {
+  scrollbar-color: #ed1c24 #e8e4de;
+  scrollbar-width: auto;
+}
+
+.kiosk-scrollbar::-webkit-scrollbar {
+  width: 1rem;
+}
+
+.kiosk-scrollbar::-webkit-scrollbar-track {
+  border-radius: 9999px;
+  background: #e8e4de;
+}
+
+.kiosk-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 4rem;
+  border: 3px solid #e8e4de;
+  border-radius: 9999px;
+  background: #ed1c24;
+}
+
 @keyframes kiosk-keyboard-enter {
   from {
     opacity: 0;

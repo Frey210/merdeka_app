@@ -92,6 +92,7 @@ Keputusan teknis: situs `trex-runner.com` hanya menjadi referensi genre. Jangan 
 - [x] Tambahkan state aplikasi `game` dengan intro singkat, gameplay, game over, input nama, dan leaderboard.
 - [x] Tahan gameplay sampai canvas/aset siap; tampilkan Dino idle dan countdown `Bersedia - Siap - Mulai` setelah tap pertama.
 - [x] Implementasi input sentuh/klik/Space untuk melompat, gravity, collision, pooling rintangan, dan peningkatan kecepatan bertahap.
+- [x] Tambahkan parallax bandara/runway dan pesawat rendah sebagai variasi obstacle yang mengharuskan pemain tidak melompat.
 - [x] Buat generator rintangan deterministik berbasis seed agar permainan dapat diputar ulang dan divalidasi server.
 - [x] Batasi satu sesi maksimal 120 detik dan sediakan tombol kembali saat permainan aktif.
 - [x] Sediakan fallback renderer Canvas Phaser bila WebGL tidak tersedia.
@@ -102,7 +103,7 @@ Keputusan teknis: situs `trex-runner.com` hanya menjadi referensi genre. Jangan 
 - [x] `POST /api/v1/game/sessions`: buat UUID, seed acak, versi konfigurasi, serta masa berlaku 5 menit.
 - [x] Client merekam waktu input lompat, bukan mengirim skor yang dipercaya langsung.
 - [ ] `POST /api/v1/game/sessions/{id}/finish`: server menjalankan ulang simulasi deterministik, menghitung skor, dan menolak replay mustahil, sesi kedaluwarsa, atau submit kedua.
-- [x] `GET /api/v1/game/leaderboard?period=daily|all-time&limit=10`: kembalikan hanya nama panggilan, skor, dan waktu yang diperlukan.
+- [x] `GET /api/v1/game/leaderboard?period=daily|all-time&limit=200`: kembalikan hanya nama panggilan, skor, dan waktu yang diperlukan; kiosk menampilkan all-time dalam panel scroll.
 - [ ] Lengkapi validasi replay server dengan simulasi collision deterministik dan blocklist istilah tidak pantas; validasi dasar/rate limit sudah aktif.
 - [x] Setelah submit, tampilkan Top 10, peringkat pemain, skor pribadi, dan tombol `Main Lagi`.
 

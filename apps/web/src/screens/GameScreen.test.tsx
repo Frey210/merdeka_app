@@ -45,6 +45,9 @@ describe("GameScreen replay lifecycle", () => {
   it("starts Main Lagi as a fresh run and keeps its score paired with the new session", async () => {
     render(<GameScreen onBack={vi.fn()} />);
 
+    await waitFor(() => expect(mocks.listLeaderboard).toHaveBeenCalledWith("all-time", 200));
+    expect(screen.getByLabelText("Leaderboard seluruh pemain")).toHaveClass("overflow-y-auto");
+
     fireEvent.click(screen.getByRole("button", { name: "Mulai Berlari" }));
     await waitFor(() => expect(mocks.mountDinoGame).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Memuat arena dan aset permainan…")).toBeInTheDocument();
