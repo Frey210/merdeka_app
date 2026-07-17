@@ -33,22 +33,29 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: /pelari terbaik/i })).toBeInTheDocument();
   });
 
-  it("kembali ke idle setelah 90 detik tanpa aktivitas", () => {
+  it("kembali ke idle setelah 60 detik tanpa aktivitas", () => {
     vi.useFakeTimers();
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
     expect(screen.getByRole("heading", { name: /mari rayakan bersama/i })).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(90_000));
+    act(() => vi.advanceTimersByTime(60_000));
 
+    expect(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i })).toBeInTheDocument();
+  });
+
+  it("menyediakan tombol dari menu untuk langsung kembali ke idle", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
+    fireEvent.click(screen.getByRole("button", { name: /kembali ke layar idle/i }));
     expect(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i })).toBeInTheDocument();
   });
 
   it("mengirim harapan dan menampilkan konfirmasi moderasi", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       if (String(input).includes("/guestbook/approved")) return Response.json([]);
-      return new Response(JSON.stringify({ id: "entry-id", status: "pending" }), {
+      return new Response(JSON.stringify({ id: "entry-id", status: "approved" }), {
         status: 201,
         headers: { "Content-Type": "application/json" },
       });

@@ -79,8 +79,10 @@ async def upload_photo(
         id=photo_id,
         storage_path=str(destination),
         public_consent=public_consent,
-        status=ModerationStatus.pending,
+        status=(ModerationStatus.approved if public_consent else ModerationStatus.pending),
         expires_at=datetime.now(UTC) + PHOTO_RETENTION,
+        reviewed_at=datetime.now(UTC) if public_consent else None,
+        reviewed_by="automatic_publication" if public_consent else None,
     )
     try:
         db.add(record)

@@ -3,6 +3,7 @@ import { ConnectionStatus } from "../components/ConnectionStatus";
 
 interface MenuScreenProps {
   onNavigate: (screen: AppScreen) => void;
+  onIdle: () => void;
 }
 
 const menuItems: { screen: AppScreen; number: string; title: string; description: string }[] = [
@@ -32,7 +33,7 @@ const menuItems: { screen: AppScreen; number: string; title: string; description
   },
 ];
 
-export function MenuScreen({ onNavigate }: MenuScreenProps) {
+export function MenuScreen({ onNavigate, onIdle }: MenuScreenProps) {
   return (
     <section className="flex flex-1 flex-col justify-center py-8 lg:py-12">
       <div className="mb-10 flex items-end justify-between gap-8">
@@ -40,9 +41,12 @@ export function MenuScreen({ onNavigate }: MenuScreenProps) {
           <p className="text-xl font-bold uppercase tracking-[0.18em] text-brand-red lg:text-2xl">Pilih pengalamanmu</p>
           <h1 className="mt-2 text-5xl font-bold leading-none lg:text-7xl">Mari Rayakan Bersama</h1>
         </div>
-        <p className="hidden max-w-md text-right text-2xl leading-snug text-ink/65 xl:block">
-          Semua aktivitas dirancang singkat agar tetap nyaman di sela perjalananmu.
-        </p>
+        <div className="flex flex-col items-end gap-5">
+          <button className="touch-button-secondary" type="button" onClick={onIdle}>← Kembali ke layar idle</button>
+          <p className="hidden max-w-md text-right text-2xl leading-snug text-ink/65 xl:block">
+            Semua aktivitas dirancang singkat agar tetap nyaman di sela perjalananmu.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
