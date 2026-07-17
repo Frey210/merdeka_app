@@ -192,7 +192,7 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
               onChange={(event) => setPublicConsent(event.target.checked)}
             />
             <span>
-              Saya bersedia foto ditampilkan publik setelah moderasi.
+              Saya bersedia foto langsung ditampilkan di layar publik.
               <small className="mt-1 block text-lg text-black/55">
                 Tidak wajib. Tanpa izin publik, foto tetap dapat diunduh melalui QR oleh pengunjung.
               </small>
@@ -220,7 +220,7 @@ export function PhotoBoothScreen({ onBack }: PhotoBoothScreenProps) {
           <p className="mt-4 text-xl text-black/60">QR berlaku sampai {new Date(expiresAt).toLocaleString("id-ID")}.</p>
           <p className="mt-2 text-lg text-black/50">
             {publicConsent
-              ? "Foto akan tampil di layar publik hanya setelah disetujui moderator."
+              ? "Foto sudah dapat tampil di layar publik dan dapat disembunyikan petugas bila diperlukan."
               : "Foto tetap privat dan tidak akan tampil di layar publik; QR unduh tetap aktif."}
           </p>
           <button className="touch-button-primary mt-7" type="button" onClick={onBack}>Selesai</button>

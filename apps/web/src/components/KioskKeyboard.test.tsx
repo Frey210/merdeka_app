@@ -1,6 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { KioskKeyboard } from "./KioskKeyboard";
+
+afterEach(cleanup);
 
 describe("KioskKeyboard", () => {
   it("types through touchscreen keys and can be dismissed", () => {
@@ -42,5 +44,33 @@ describe("KioskKeyboard", () => {
     fireEvent.pointerDown(screen.getByRole("button", { name: "Baris baru" }));
     fireEvent.pointerUp(screen.getByRole("button", { name: "Baris baru" }));
     expect(onChange.mock.lastCall?.[0]).toBe("Maju\n");
+  });
+
+  it("returns Shift to lowercase after one uppercase character", () => {
+    render(<KioskKeyboard value="" onChange={vi.fn()} onClose={vi.fn()} maxLength={20} label="Nama" />);
+
+    const shift = screen.getByRole("button", { name: "Shift" });
+    fireEvent.pointerDown(shift);
+    fireEvent.pointerUp(shift);
+    const uppercaseA = screen.getByRole("button", { name: "A" });
+    fireEvent.pointerDown(uppercaseA);
+    fireEvent.pointerUp(uppercaseA);
+
+    expect(screen.getByRole("button", { name: "a" })).toBeInTheDocument();
+  });
+
+  it("keeps Caps active and provides a symbols layout", () => {
+    render(<KioskKeyboard value="" onChange={vi.fn()} onClose={vi.fn()} maxLength={20} label="Nama" />);
+
+    const caps = screen.getByRole("button", { name: "Caps" });
+    fireEvent.pointerDown(caps);
+    fireEvent.pointerUp(caps);
+    expect(screen.getByRole("button", { name: "A" })).toBeInTheDocument();
+
+    const symbols = screen.getByRole("button", { name: "!@#" });
+    fireEvent.pointerDown(symbols);
+    fireEvent.pointerUp(symbols);
+    expect(screen.getByRole("button", { name: "@" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "ABC" })).toBeInTheDocument();
   });
 });

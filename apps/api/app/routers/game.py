@@ -17,6 +17,7 @@ from app.schemas import (
     LeaderboardItem,
     LeaderboardResponse,
 )
+from app.services.content_filter import contains_profanity
 
 router = APIRouter(prefix="/game", tags=["game"])
 DatabaseSession = Annotated[Session, Depends(get_db)]
@@ -79,6 +80,11 @@ def finish_game_session(
 
     elapsed_ms = max(0, int((now - game_session.started_at).total_seconds() * 1_000))
     validate_replay(payload, elapsed_ms)
+    if contains_profanity(payload.display_name):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Nama mengandung bahasa yang tidak diizinkan",
+        )
     verified_score = payload.duration_ms // 100
 
     game_session.completed_at = now

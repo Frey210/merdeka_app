@@ -31,7 +31,7 @@ const fieldSettings: Record<TextFieldName, { label: string; maxLength: number; m
 export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [submittedName, setSubmittedName] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState<{ name: string; status: "pending" | "approved" | "rejected" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeField, setActiveField] = useState<TextFieldName | null>(null);
 
@@ -41,13 +41,13 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
     setError(null);
 
     try {
-      await submitGuestEntry({
+      const result = await submitGuestEntry({
         display_name: form.displayName,
         origin: form.origin,
         message: form.message,
         consent_public: form.consentPublic,
       });
-      setSubmittedName(form.displayName.trim());
+      setSubmitted({ name: form.displayName.trim(), status: result.status });
       setForm(initialForm);
       setActiveField(null);
     } catch (submitError) {
@@ -57,7 +57,7 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
     }
   };
 
-  if (submittedName) {
+  if (submitted) {
     return (
       <section className="grid flex-1 place-items-center py-8 text-center">
         <div className="max-w-4xl rounded-[3rem] bg-white p-14 shadow-2xl">
@@ -65,9 +65,13 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
             ✓
           </span>
           <p className="mt-8 text-2xl font-bold uppercase tracking-[0.16em] text-brand-red">Harapan diterima</p>
-          <h1 className="mt-4 text-5xl font-bold leading-tight lg:text-7xl">Terima kasih, {submittedName}.</h1>
+          <h1 className="mt-4 text-5xl font-bold leading-tight lg:text-7xl">Terima kasih, {submitted.name}.</h1>
           <p className="mx-auto mt-6 max-w-2xl text-2xl leading-relaxed text-ink/65">
-            Harapanmu tersimpan dan akan tampil setelah ditinjau petugas.
+            {submitted.status === "approved"
+              ? "Harapanmu sudah tampil di layar publik."
+              : submitted.status === "rejected"
+                ? "Harapanmu tersimpan, tetapi tidak ditampilkan karena filter bahasa otomatis."
+                : "Harapanmu tersimpan secara privat dan tidak ditampilkan di layar publik."}
           </p>
           <button className="touch-button-primary mt-10" type="button" onClick={onBack}>
             Kembali ke Menu
@@ -143,7 +147,7 @@ export function GuestBookScreen({ onBack }: GuestBookScreenProps) {
             checked={form.consentPublic}
             onChange={(event) => setForm({ ...form, consentPublic: event.target.checked })}
           />
-          <span>Saya bersedia nama, asal, dan harapan ini ditampilkan di layar publik setelah moderasi.</span>
+          <span>Saya bersedia nama, asal, dan harapan ini langsung ditampilkan di layar publik setelah melewati filter bahasa otomatis.</span>
         </label>
 
         {error && (

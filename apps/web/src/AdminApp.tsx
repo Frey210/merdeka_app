@@ -18,9 +18,9 @@ import {
 type QueueStatus = AdminGuestEntry["status"];
 
 const tabs: { value: QueueStatus; label: string }[] = [
-  { value: "pending", label: "Menunggu" },
-  { value: "approved", label: "Disetujui" },
-  { value: "rejected", label: "Ditolak" },
+  { value: "approved", label: "Tampil di publik" },
+  { value: "rejected", label: "Disembunyikan" },
+  { value: "pending", label: "Privat / menunggu" },
 ];
 
 export function AdminApp() {
@@ -29,7 +29,7 @@ export function AdminApp() {
   const [entries, setEntries] = useState<AdminGuestEntry[]>([]);
   const [photos, setPhotos] = useState<AdminPhoto[]>([]);
   const [scores, setScores] = useState<AdminLeaderboardEntry[]>([]);
-  const [queueStatus, setQueueStatus] = useState<QueueStatus>("pending");
+  const [queueStatus, setQueueStatus] = useState<QueueStatus>("approved");
   const [loading, setLoading] = useState(true);
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -117,7 +117,7 @@ export function AdminApp() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div>
             <p className="text-sm font-bold tracking-[0.18em] text-brand-red uppercase">UPG</p>
-            <h1 className="text-2xl font-bold">Moderasi Konten</h1>
+            <h1 className="text-2xl font-bold">Kelola Konten Publik</h1>
           </div>
           <div className="text-right text-sm text-black/60">
             <p>{identity?.email ?? "Cloudflare Access"}</p>
@@ -228,27 +228,15 @@ export function AdminApp() {
                 </div>
                 <p className="my-5 whitespace-pre-wrap text-lg">{entry.message}</p>
                 <div className="flex flex-wrap gap-2">
-                  {entry.status === "pending" && (
-                    <>
-                      <button
-                        className="rounded-full bg-green-700 px-5 py-2 font-bold text-white disabled:opacity-50"
-                        disabled={workingId === entry.id || !entry.consent_public}
-                        onClick={() => void moderate(entry.id, "approved")}
-                        type="button"
-                        title={!entry.consent_public ? "Harapan privat tidak boleh dipublikasikan" : undefined}
-                      >
-                        Setujui
-                      </button>
-                      <button
-                        className="rounded-full bg-black/70 px-5 py-2 font-bold text-white disabled:opacity-50"
-                        disabled={workingId === entry.id}
-                        onClick={() => void moderate(entry.id, "rejected")}
-                        type="button"
-                      >
-                        Tolak
-                      </button>
-                    </>
-                  )}
+                  {entry.status === "approved" ? (
+                    <button className="rounded-full bg-black/70 px-5 py-2 font-bold text-white disabled:opacity-50" disabled={workingId === entry.id} onClick={() => void moderate(entry.id, "rejected")} type="button">
+                      Sembunyikan dari layar
+                    </button>
+                  ) : entry.consent_public ? (
+                    <button className="rounded-full bg-green-700 px-5 py-2 font-bold text-white disabled:opacity-50" disabled={workingId === entry.id} onClick={() => void moderate(entry.id, "approved")} type="button">
+                      Tampilkan kembali
+                    </button>
+                  ) : null}
                   <button
                     className="rounded-full border border-red-200 px-5 py-2 font-bold text-brand-red disabled:opacity-50"
                     disabled={workingId === entry.id}
@@ -281,27 +269,15 @@ export function AdminApp() {
                     Retensi sampai {new Date(photo.expires_at).toLocaleString("id-ID")}
                   </p>
                   <div className="mt-5 flex flex-wrap gap-2">
-                    {photo.status === "pending" && (
-                      <>
-                        <button
-                          className="rounded-full bg-green-700 px-5 py-2 font-bold text-white disabled:opacity-50"
-                          disabled={workingId === photo.id || !photo.public_consent}
-                          onClick={() => void moderate(photo.id, "approved")}
-                          type="button"
-                          title={!photo.public_consent ? "Foto privat tidak boleh dipublikasi" : undefined}
-                        >
-                          Setujui
-                        </button>
-                        <button
-                          className="rounded-full bg-black/70 px-5 py-2 font-bold text-white disabled:opacity-50"
-                          disabled={workingId === photo.id}
-                          onClick={() => void moderate(photo.id, "rejected")}
-                          type="button"
-                        >
-                          Tolak
-                        </button>
-                      </>
-                    )}
+                    {photo.status === "approved" ? (
+                      <button className="rounded-full bg-black/70 px-5 py-2 font-bold text-white disabled:opacity-50" disabled={workingId === photo.id} onClick={() => void moderate(photo.id, "rejected")} type="button">
+                        Sembunyikan dari layar
+                      </button>
+                    ) : photo.public_consent ? (
+                      <button className="rounded-full bg-green-700 px-5 py-2 font-bold text-white disabled:opacity-50" disabled={workingId === photo.id} onClick={() => void moderate(photo.id, "approved")} type="button">
+                        Tampilkan kembali
+                      </button>
+                    ) : null}
                     <button
                       className="rounded-full border border-red-200 px-5 py-2 font-bold text-brand-red disabled:opacity-50"
                       disabled={workingId === photo.id}

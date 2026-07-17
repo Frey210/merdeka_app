@@ -298,6 +298,11 @@ button {
   background: #ed1c24;
 }
 
+.merdeka-keyboard.hg-theme-default .keyboard-active-key {
+  background: #ed1c24;
+  color: #fff;
+}
+
 .merdeka-keyboard.hg-theme-default .keyboard-space-key {
   max-width: 34rem;
 }

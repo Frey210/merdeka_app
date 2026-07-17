@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe("AdminApp", () => {
-  it("menampilkan antrean foto dan melarang approve foto privat", async () => {
+  it("menampilkan foto privat tanpa tindakan publikasi", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith("/admin/session")) {
@@ -35,7 +35,8 @@ describe("AdminApp", () => {
 
     expect(await screen.findByAltText(/foto photobooth untuk moderasi/i)).toBeInTheDocument();
     expect(screen.getByText("Privat")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Setujui" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /tampilkan/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Hapus" })).toBeInTheDocument();
   });
 
   it("menampilkan dan dapat menyembunyikan skor leaderboard", async () => {

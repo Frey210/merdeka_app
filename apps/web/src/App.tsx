@@ -22,7 +22,7 @@ export type AppScreen =
   | "preview"
   | "download";
 
-const INTERACTION_TIMEOUT_MS = 90_000;
+const INTERACTION_TIMEOUT_MS = 60_000;
 
 export function App() {
   const [screen, setScreen] = useState<AppScreen>("idle");
@@ -52,7 +52,7 @@ export function App() {
           <div className="mx-auto flex min-h-screen max-w-[1920px] flex-col px-8 py-6 lg:px-16 lg:py-8">
             <BrandHeader onHome={() => setScreen("menu")} />
 
-            {screen === "menu" && <MenuScreen onNavigate={setScreen} />}
+            {screen === "menu" && <MenuScreen onNavigate={setScreen} onIdle={resetToIdle} />}
             {screen === "timeline" && <TimelineScreen onBack={() => setScreen("menu")} />}
             {screen === "guestbook" && <GuestBookScreen onBack={() => setScreen("menu")} />}
             {screen === "camera" && <PhotoBoothScreen onBack={() => setScreen("menu")} />}
