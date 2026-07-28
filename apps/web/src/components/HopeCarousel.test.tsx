@@ -22,7 +22,7 @@ describe("HopeCarousel", () => {
       ]);
     });
 
-    render(<HopeCarousel />);
+    render(<HopeCarousel onOpenGallery={() => undefined} />);
 
     expect(await screen.findByText(/semoga indonesia semakin maju/i)).toBeInTheDocument();
     expect(screen.getByText("Ayu")).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe("HopeCarousel", () => {
       ]);
     });
 
-    render(<HopeCarousel />);
+    render(<HopeCarousel onOpenGallery={() => undefined} />);
     await act(async () => Promise.resolve());
     expect(screen.getByAltText(/foto merdeka pengunjung/i)).toHaveAttribute(
       "src",

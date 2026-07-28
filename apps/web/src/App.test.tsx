@@ -9,6 +9,18 @@ afterEach(() => {
 });
 
 describe("App", () => {
+  it("memblokir context menu dan aksi default double click", () => {
+    render(<App />);
+    const contextMenu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+    const doubleClick = new MouseEvent("dblclick", { bubbles: true, cancelable: true });
+
+    window.dispatchEvent(contextMenu);
+    window.dispatchEvent(doubleClick);
+
+    expect(contextMenu.defaultPrevented).toBe(true);
+    expect(doubleClick.defaultPrevented).toBe(true);
+  });
+
   it("berpindah dari idle ke menu lalu membuka timeline", () => {
     render(<App />);
 
@@ -50,6 +62,47 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
     fireEvent.click(screen.getByRole("button", { name: /kembali ke layar idle/i }));
     expect(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i })).toBeInTheDocument();
+  });
+
+  it("membuka Gallery Merdeka dari carousel idle tanpa masuk ke menu utama", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      if (String(input).includes("/guestbook/approved")) {
+        return Response.json([
+          {
+            id: "hope-1",
+            display_name: "Ayu",
+            origin: "Makassar",
+            message: "Indonesia semakin maju.",
+            created_at: "2026-07-28T10:00:00+08:00",
+          },
+        ]);
+      }
+      if (String(input).includes("/photos/approved")) {
+        return Response.json([
+          {
+            id: "photo-1",
+            created_at: "2026-07-28T11:00:00+08:00",
+          },
+        ]);
+      }
+      return Response.json([]);
+    });
+    render(<App />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /buka galeri merdeka/i }));
+
+    expect(screen.getByRole("heading", { name: /galeri merdeka/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /mari rayakan bersama/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Semua Karya" })).toHaveAttribute("aria-pressed", "true");
+    expect(await screen.findAllByRole("button", { name: /tampilkan karya/i })).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Harapan" }));
+    await waitFor(() => {
+      expect(screen.getAllByText("“Indonesia semakin maju.”").length).toBeGreaterThan(0);
+    });
+    fireEvent.click(screen.getByRole("button", { name: /tutup galeri/i }));
+    expect(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i })).toBeInTheDocument();
+    fetchMock.mockRestore();
   });
 
   it("mengirim harapan dan menampilkan konfirmasi moderasi", async () => {
@@ -101,15 +154,30 @@ describe("App", () => {
     expect(screen.queryByLabelText("Keyboard layar sentuh")).not.toBeInTheDocument();
   });
 
-  it("membuka pemberitahuan privasi photobooth sebelum kamera", () => {
-    render(<App />);
+  it("langsung membuka kamera dan menyediakan pilihan twibbon", async () => {
+    const stream = { getTracks: () => [{ stop: vi.fn() }] } as unknown as MediaStream;
+    const getUserMedia = vi.fn().mockResolvedValue(stream);
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia },
+    });
+    const { container } = render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
     fireEvent.click(screen.getByRole("button", { name: /photobooth merdeka/i }));
 
-    expect(screen.getByRole("heading", { name: /siap berfoto/i })).toBeInTheDocument();
-    expect(screen.getByText(/foto disimpan privat maksimal 7 hari/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /pilih twibbon & berpose/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /siap berfoto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /aktifkan kamera/i })).not.toBeInTheDocument();
+    await waitFor(() => expect(getUserMedia).toHaveBeenCalledOnce());
+    expect(container.querySelector("video")).toBeInTheDocument();
     expect(screen.getByRole("checkbox")).toBeChecked();
+
+    fireEvent.click(screen.getByRole("button", { name: /harmoni indonesia/i }));
+    expect(container.querySelector("img.pointer-events-none")).toHaveAttribute(
+      "src",
+      "/twibbons/harmoni-indonesia.png",
+    );
   });
 
   it("memasang stream setelah elemen video selesai dirender", async () => {
@@ -125,7 +193,6 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /sentuh untuk memulai pengalaman/i }));
     fireEvent.click(screen.getByRole("button", { name: /photobooth merdeka/i }));
-    fireEvent.click(screen.getByRole("button", { name: /aktifkan kamera/i }));
 
     const video = await waitFor(() => {
       const element = container.querySelector("video");
