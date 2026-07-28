@@ -20,6 +20,7 @@ from app.schemas import (
     ModerationUpdate,
 )
 from app.security.cloudflare_access import require_admin
+from app.services.photo_variants import photo_file_paths
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 DatabaseSession = Annotated[Session, Depends(get_db)]
@@ -195,8 +196,9 @@ def delete_photo(
     )
     db.delete(photo)
     db.commit()
-    with suppress(OSError):
-        Path(storage_path).unlink(missing_ok=True)
+    for file_path in photo_file_paths(storage_path):
+        with suppress(OSError):
+            file_path.unlink(missing_ok=True)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

@@ -1,6 +1,7 @@
 import io
 import uuid
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -67,6 +68,25 @@ def test_private_photo_is_not_available_from_public_content_endpoint() -> None:
         approved_photo_content(photo_id, db)
 
     assert caught.value.status_code == 404
+
+
+def test_public_content_prefers_non_destructive_carousel_variant(tmp_path) -> None:
+    photo_id = uuid.uuid4()
+    source = tmp_path / f"{photo_id}.jpg"
+    variant = tmp_path / f"{photo_id}.carousel.jpg"
+    source.write_bytes(make_jpeg())
+    variant.write_bytes(make_jpeg())
+    db = Mock()
+    db.get.return_value = SimpleNamespace(
+        status=ModerationStatus.approved,
+        public_consent=True,
+        expires_at=datetime.now(UTC) + timedelta(days=1),
+        storage_path=str(source),
+    )
+
+    response = approved_photo_content(photo_id, db)
+
+    assert Path(response.path) == variant
 
 
 def test_private_photo_still_receives_download_token() -> None:

@@ -17,6 +17,7 @@ from app.config import Settings, get_settings
 from app.database import get_db
 from app.models import DownloadToken, ModerationStatus, Photo
 from app.schemas import ApprovedPhoto, PhotoCreated, PhotoDownloadCreated
+from app.services.photo_variants import carousel_or_original_path
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 download_router = APIRouter(prefix="/d", tags=["downloads"])
@@ -127,7 +128,7 @@ def approved_photo_content(photo_id: uuid.UUID, db: DatabaseSession) -> FileResp
     ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto tidak tersedia")
     return FileResponse(
-        photo.storage_path,
+        carousel_or_original_path(photo.storage_path),
         media_type="image/jpeg",
         headers={"Cache-Control": "public, max-age=60"},
     )

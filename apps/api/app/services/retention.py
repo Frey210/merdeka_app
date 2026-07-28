@@ -1,11 +1,11 @@
 import logging
 from datetime import UTC, datetime
-from pathlib import Path
 
 from sqlalchemy import select, text
 
 from app.database import SessionLocal
 from app.models import Photo
+from app.services.photo_variants import photo_file_paths
 
 logger = logging.getLogger(__name__)
 RETENTION_LOCK_ID = 812026
@@ -27,10 +27,11 @@ def cleanup_expired_photos() -> int:
         db.commit()
 
     for storage_path in removed_paths:
-        try:
-            Path(storage_path).unlink(missing_ok=True)
-        except OSError:
-            logger.exception("Gagal menghapus file foto kedaluwarsa")
+        for file_path in photo_file_paths(storage_path):
+            try:
+                file_path.unlink(missing_ok=True)
+            except OSError:
+                logger.exception("Gagal menghapus file foto kedaluwarsa")
     if removed_paths:
         logger.info("Cleanup retensi menghapus %d foto", len(removed_paths))
     return len(removed_paths)
