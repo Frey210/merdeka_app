@@ -39,6 +39,25 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+body.kiosk-guard-active {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+body.kiosk-guard-active input,
+body.kiosk-guard-active textarea,
+body.kiosk-guard-active [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+body.kiosk-guard-active img {
+  -webkit-user-drag: none;
 }
 
 button,
@@ -65,6 +84,58 @@ button {
 
 .hope-card-enter {
   animation: hope-card-enter 500ms ease-out;
+}
+
+@keyframes gallery-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.gallery-item-enter {
+  animation: gallery-item-enter 320ms ease-out;
+}
+
+.gallery-swipe {
+  touch-action: none;
+}
+
+.gallery-filmstrip {
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x;
+}
+
+.gallery-filmstrip > button {
+  scroll-snap-align: center;
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  width: 5.5rem;
+  height: 5.5rem;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 3px solid rgb(255 255 255 / 40%);
+  border-radius: 9999px;
+  background: rgb(16 16 16 / 72%);
+  color: #fff;
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1rem 2rem rgb(16 16 16 / 25%);
+}
+
+.gallery-arrow:active {
+  transform: translateY(-50%) scale(0.94);
+  background: #ed1c24;
 }
 
 .touch-button-primary {
@@ -155,6 +226,7 @@ button {
 
 .kiosk-scrollbar::-webkit-scrollbar {
   width: 1rem;
+  height: 1rem;
 }
 
 .kiosk-scrollbar::-webkit-scrollbar-track {
