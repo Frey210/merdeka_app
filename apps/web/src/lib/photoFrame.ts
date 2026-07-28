@@ -1,16 +1,45 @@
-export type FrameTheme = "merah-putih" | "pita-nusantara" | "bandara-upg";
+export type TwibbonId =
+  | "dirgahayu-nusantara"
+  | "pesona-makassar"
+  | "harmoni-indonesia";
 
-export const frameThemes: { id: FrameTheme; name: string; description: string }[] = [
-  { id: "merah-putih", name: "Merah Putih", description: "Klasik dan tegas" },
-  { id: "pita-nusantara", name: "Pita Nusantara", description: "Dinamis dan meriah" },
-  { id: "bandara-upg", name: "Bandara UPG", description: "Kenangan dari Makassar" },
+export interface Twibbon {
+  id: TwibbonId;
+  name: string;
+  description: string;
+  src: string;
+}
+
+export const twibbons: Twibbon[] = [
+  {
+    id: "dirgahayu-nusantara",
+    name: "Dirgahayu Nusantara",
+    description: "Semangat budaya dan sejarah Makassar",
+    src: "/twibbons/dirgahayu-nusantara.png",
+  },
+  {
+    id: "pesona-makassar",
+    name: "Pesona Makassar",
+    description: "Ikon Bandara Sultan Hasanuddin",
+    src: "/twibbons/pesona-makassar.png",
+  },
+  {
+    id: "harmoni-indonesia",
+    name: "Harmoni Indonesia",
+    description: "Kebersamaan dalam keberagaman",
+    src: "/twibbons/harmoni-indonesia.png",
+  },
 ];
+
+export function getTwibbon(id: TwibbonId): Twibbon {
+  return twibbons.find((twibbon) => twibbon.id === id) ?? twibbons[0];
+}
 
 function loadImage(source: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Logo bingkai gagal dimuat"));
+    image.onerror = () => reject(new Error("Twibbon gagal dimuat"));
     image.src = source;
   });
 }
@@ -51,46 +80,6 @@ function drawVideoCover(
   context.restore();
 }
 
-function drawFrame(
-  context: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  theme: FrameTheme,
-  logo: HTMLImageElement,
-) {
-  context.save();
-  if (theme === "merah-putih") {
-    context.fillStyle = "#ed1c24";
-    context.fillRect(0, height - 112, width, 112);
-    context.fillRect(0, 0, 26, height);
-  } else if (theme === "pita-nusantara") {
-    context.fillStyle = "rgba(237, 28, 36, 0.94)";
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(330, 0);
-    context.lineTo(0, 240);
-    context.fill();
-    context.beginPath();
-    context.moveTo(width, height);
-    context.lineTo(width - 380, height);
-    context.lineTo(width, height - 260);
-    context.fill();
-  } else {
-    context.fillStyle = "rgba(16, 16, 16, 0.78)";
-    context.fillRect(0, height - 104, width, 104);
-    context.fillStyle = "#ed1c24";
-    context.fillRect(0, height - 116, width, 12);
-  }
-
-  context.fillStyle = "#fff";
-  context.font = "700 36px 'Saira Semi Condensed', sans-serif";
-  context.textBaseline = "middle";
-  const caption = theme === "bandara-upg" ? "BANDARA SULTAN HASANUDDIN • UPG" : "INDONESIA MERDEKA • 2026";
-  context.fillText(caption, 42, height - 54);
-  context.drawImage(logo, width - 300, 22, 260, 184);
-  context.restore();
-}
-
 function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -101,16 +90,17 @@ function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob>
   });
 }
 
-export async function capturePhoto(video: HTMLVideoElement, theme: FrameTheme): Promise<Blob> {
+export async function capturePhoto(video: HTMLVideoElement, twibbonId: TwibbonId): Promise<Blob> {
   if (!video.videoWidth || !video.videoHeight) throw new Error("Kamera belum siap");
   const canvas = document.createElement("canvas");
   canvas.width = 1280;
   canvas.height = 720;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Canvas tidak tersedia");
+
   drawVideoCover(context, video, canvas.width, canvas.height);
-  const logo = await loadImage("/branding/hut-ri-81.png");
-  drawFrame(context, canvas.width, canvas.height, theme, logo);
+  const overlay = await loadImage(getTwibbon(twibbonId).src);
+  context.drawImage(overlay, 0, 0, canvas.width, canvas.height);
 
   for (const quality of [0.9, 0.82, 0.74, 0.66]) {
     const blob = await canvasToJpeg(canvas, quality);
